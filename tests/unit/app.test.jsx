@@ -50,6 +50,7 @@ describe("App", () => {
       screen.getByRole("button", { name: /next challenge: average support ticket time/i }),
     ).toBeInTheDocument();
     expect(screen.getByText(/completed on this device/i)).toBeInTheDocument();
+    expect(screen.getByText(/solved in 1 check with 0 hints used/i)).toBeInTheDocument();
   });
 
   it("can collapse the scenario brief and move to the next challenge after completion", () => {
@@ -92,6 +93,7 @@ describe("App", () => {
 
     expect(screen.getByText(/1\/10 complete/i)).toBeInTheDocument();
     expect(screen.getByText(/solved 3 stars/i)).toBeInTheDocument();
+    expect(screen.getByText(/best run: 1 checks, 0 hints/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /average support ticket time/i })).toBeInTheDocument();
   });
 });

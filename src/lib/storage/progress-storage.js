@@ -16,6 +16,14 @@ function clampStars(starsEarned) {
   return Math.min(Math.max(Math.round(starsEarned), 1), 3);
 }
 
+function clampCount(value) {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  return Math.max(Math.round(value), 0);
+}
+
 export function normalizeStoredProgressRecord(progressByChallengeId, challengeIds) {
   if (!isPlainObject(progressByChallengeId)) {
     return {};
@@ -33,6 +41,8 @@ export function normalizeStoredProgressRecord(progressByChallengeId, challengeId
       [challengeId]: {
         completed: true,
         starsEarned: clampStars(progress.starsEarned),
+        submissionCount: clampCount(progress.submissionCount),
+        hintsUsed: clampCount(progress.hintsUsed),
       },
     };
   }, {});

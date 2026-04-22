@@ -7,16 +7,49 @@ export function getCompletedChallengeIds(progressByChallengeId) {
     .map(([challengeId]) => challengeId);
 }
 
+function normalizeRunSummary(progress) {
+  return {
+    completed: Boolean(progress?.completed),
+    starsEarned: Math.max(progress?.starsEarned ?? 0, 0),
+    submissionCount: Math.max(progress?.submissionCount ?? 0, 0),
+    hintsUsed: Math.max(progress?.hintsUsed ?? 0, 0),
+  };
+}
+
+export function choosePreferredProgressRecord(leftProgress, rightProgress) {
+  const left = normalizeRunSummary(leftProgress);
+  const right = normalizeRunSummary(rightProgress);
+
+  if (right.starsEarned > left.starsEarned) {
+    return right;
+  }
+
+  if (right.starsEarned < left.starsEarned) {
+    return left;
+  }
+
+  if (right.submissionCount < left.submissionCount) {
+    return right;
+  }
+
+  if (right.submissionCount > left.submissionCount) {
+    return left;
+  }
+
+  if (right.hintsUsed < left.hintsUsed) {
+    return right;
+  }
+
+  return left;
+}
+
 export function mergeProgressRecords(baseProgressByChallengeId, incomingProgressByChallengeId) {
   const mergedProgress = { ...baseProgressByChallengeId };
 
   for (const [challengeId, progress] of Object.entries(incomingProgressByChallengeId)) {
     const previousProgress = mergedProgress[challengeId];
 
-    mergedProgress[challengeId] = {
-      completed: Boolean(previousProgress?.completed || progress?.completed),
-      starsEarned: Math.max(previousProgress?.starsEarned ?? 0, progress?.starsEarned ?? 0),
-    };
+    mergedProgress[challengeId] = choosePreferredProgressRecord(previousProgress, progress);
   }
 
   return mergedProgress;

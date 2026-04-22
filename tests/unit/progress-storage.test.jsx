@@ -18,7 +18,12 @@ describe("progress storage helpers", () => {
     expect(
       normalizeStoredProgressRecord(
         {
-          "formulas-beginner-sum-q1-west": { completed: true, starsEarned: 5 },
+          "formulas-beginner-sum-q1-west": {
+            completed: true,
+            starsEarned: 5,
+            submissionCount: 1,
+            hintsUsed: 0,
+          },
           "formulas-beginner-average-ticket": { completed: false, starsEarned: 2 },
           "unknown-challenge": { completed: true, starsEarned: 3 },
         },
@@ -28,6 +33,8 @@ describe("progress storage helpers", () => {
       "formulas-beginner-sum-q1-west": {
         completed: true,
         starsEarned: 3,
+        submissionCount: 1,
+        hintsUsed: 0,
       },
     });
   });
@@ -55,6 +62,8 @@ describe("progress storage helpers", () => {
         "formulas-beginner-average-ticket": {
           completed: true,
           starsEarned: 2,
+          submissionCount: 2,
+          hintsUsed: 1,
         },
       },
       uiState: {
@@ -69,6 +78,8 @@ describe("progress storage helpers", () => {
         "formulas-beginner-average-ticket": {
           completed: true,
           starsEarned: 2,
+          submissionCount: 2,
+          hintsUsed: 1,
         },
       },
       uiState: {
@@ -83,6 +94,8 @@ describe("progress storage helpers", () => {
         "formulas-beginner-average-ticket": {
           completed: true,
           starsEarned: 2,
+          submissionCount: 2,
+          hintsUsed: 1,
         },
       },
       uiState: {
@@ -104,6 +117,8 @@ describe("progress storage helpers", () => {
       "formulas-beginner-average-ticket": {
         completed: true,
         starsEarned: 2,
+        submissionCount: 0,
+        hintsUsed: 0,
       },
     });
     expect(parseStoredAppStatePayload(payload, challengeIds, viewIds)).toEqual({
@@ -111,6 +126,8 @@ describe("progress storage helpers", () => {
         "formulas-beginner-average-ticket": {
           completed: true,
           starsEarned: 2,
+          submissionCount: 0,
+          hintsUsed: 0,
         },
       },
       uiState: {},

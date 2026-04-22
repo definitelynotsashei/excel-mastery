@@ -19,6 +19,8 @@ describe("App persistence flow", () => {
         "formulas-beginner-sum-q1-west": {
           completed: true,
           starsEarned: 3,
+          submissionCount: 1,
+          hintsUsed: 0,
         },
       },
       uiState: {},
@@ -43,6 +45,7 @@ describe("App persistence flow", () => {
 
     expect(screen.getByText(/1\/10 complete/i)).toBeInTheDocument();
     expect(screen.getByText(/solved 3 stars/i)).toBeInTheDocument();
+    expect(screen.getByText(/best run: 1 checks, 0 hints/i)).toBeInTheDocument();
   });
 
   it("hydrates the saved current view and active challenge", async () => {
@@ -86,6 +89,8 @@ describe("App persistence flow", () => {
             "formulas-beginner-average-ticket": expect.objectContaining({
               completed: true,
               starsEarned: 3,
+              submissionCount: 1,
+              hintsUsed: 0,
             }),
           }),
           uiState: expect.objectContaining({

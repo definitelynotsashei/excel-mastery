@@ -30,6 +30,7 @@ import {
 import { getCellFormula, isEditableTargetCell } from "../features/formulas/lib/grid-selectors";
 import { validateChallenge } from "../features/formulas/lib/validate-challenge";
 import {
+  choosePreferredProgressRecord,
   getChallengeCompletion,
   getCompletedChallengeCount,
   getEarnedStars,
@@ -237,14 +238,16 @@ function App() {
         setStorageStatus("saving");
         setProgressByChallengeId((currentProgress) => {
           const previousProgress = currentProgress[activeChallenge.id];
-          const previousStars = previousProgress?.starsEarned ?? 0;
+          const nextProgress = choosePreferredProgressRecord(previousProgress, {
+            completed: true,
+            starsEarned: completionStars,
+            submissionCount: nextAttemptState.submissionCount,
+            hintsUsed: nextAttemptState.hintsShown,
+          });
 
           return {
             ...currentProgress,
-            [activeChallenge.id]: {
-              completed: true,
-              starsEarned: Math.max(previousStars, completionStars),
-            },
+            [activeChallenge.id]: nextProgress,
           };
         });
       }
@@ -531,6 +534,11 @@ function App() {
                           <p className="mt-3 text-sm leading-6 text-slate-300">
                             {challenge.learningObjective}
                           </p>
+                          {isCompleted && (
+                            <p className="mt-3 text-xs uppercase tracking-[0.18em] text-emerald-200/80">
+                              Best run: {challengeProgress.submissionCount} checks, {challengeProgress.hintsUsed} hints
+                            </p>
+                          )}
                           {!tier.unlocked && (
                             <p className="mt-3 text-xs uppercase tracking-[0.18em] text-slate-500">
                               Complete enough of the previous tier to unlock this section.
@@ -567,7 +575,7 @@ function App() {
                   </h2>
                   {activeChallengeProgress?.completed && (
                     <div className="mt-3 inline-flex rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-emerald-200">
-                      Completed on this device - {activeChallengeProgress.starsEarned} stars
+                      Completed on this device - {activeChallengeProgress.starsEarned} stars - {activeChallengeProgress.submissionCount} checks - {activeChallengeProgress.hintsUsed} hints
                     </div>
                   )}
                 </div>
@@ -709,6 +717,8 @@ function App() {
                 <ReviewCard
                   challenge={activeChallenge}
                   starsEarned={starsEarned}
+                  submissionCount={attemptState.submissionCount}
+                  hintsUsed={attemptState.hintsShown}
                   nextChallengeTitle={nextChallenge?.title ?? null}
                   onNextChallenge={nextChallenge ? () => openChallenge(nextChallenge) : null}
                   onBackToTrack={openTrackView}

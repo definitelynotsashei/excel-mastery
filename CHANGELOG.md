@@ -37,6 +37,7 @@ All notable changes to this project are documented in this file.
 - Persistence-backed progress using a storage adapter with IndexedDB fallback, plus autosave and hydration so formulas completion survives reloads and relaunches.
 - Resume-state persistence so the app restores the last active view and formulas challenge instead of always reopening at the default dashboard state.
 - Service-worker cache strategy fix so browser/PWA launches stop preferring stale cached app shells for navigations after updates.
+- Best-run persistence for solved formulas challenges, including saved check counts and hint usage, surfaced in the track view and review flow.
 
 ### Changed
 - Established default engineering and documentation workflow.
