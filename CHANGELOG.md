@@ -26,6 +26,8 @@ All notable changes to this project are documented in this file.
 - Navigable product shell with dashboard, formulas track overview, and challenge workspace views.
 - App-shell helpers and tests covering UI navigation into the formulas workspace.
 - Windows double-click launcher and stop scripts so the app can be opened without manually using the command prompt.
+- Launcher fix so Excel Mastery uses its own local port instead of opening an unrelated app already running on a shared preview port.
+- Electron desktop shell and desktop-launch VBScript so Excel Mastery can run as its own application window instead of only in the browser.
 
 ### Changed
 - Established default engineering and documentation workflow.

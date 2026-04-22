@@ -10,8 +10,8 @@ const __dirname = resolve(__filename, "..");
 const projectRoot = resolve(__dirname, "..");
 const distRoot = join(projectRoot, "dist");
 const host = "127.0.0.1";
-const port = 4173;
-const launchUrl = `http://${host}:${port}/`;
+const port = 43173;
+const launchUrl = `http://${host}:${port}/?app=excel-mastery`;
 
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",
@@ -88,8 +88,10 @@ const server = createServer(async (request, response) => {
 
 server.on("error", (error) => {
   if (error && typeof error === "object" && "code" in error && error.code === "EADDRINUSE") {
-    openBrowser(launchUrl);
-    process.exit(0);
+    console.error(
+      `Excel Mastery could not start because port ${port} is already in use. Close the existing Excel Mastery launcher process or run Close Excel Mastery.vbs first.`,
+    );
+    process.exit(1);
   }
 
   console.error(error);

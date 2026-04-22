@@ -38,8 +38,19 @@ For a double-click launch on Windows, use:
 This will:
 - build the current app
 - start a hidden local server
-- open Excel Mastery in your default browser automatically
+- open Excel Mastery in your default browser automatically on a project-specific local port
 
 To stop the hidden app server, use:
 
 - `Close Excel Mastery.vbs`
+
+## Open As A Desktop App
+
+For a true desktop window instead of a browser tab, use:
+
+- `Open Excel Mastery Desktop.vbs`
+
+This will:
+- build the current app
+- launch Excel Mastery inside an Electron desktop window
+- avoid the browser for normal use
