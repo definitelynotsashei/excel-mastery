@@ -1,9 +1,56 @@
-const CACHE_NAME = "excel-mastery-shell-v1";
-const APP_SHELL = ["/", "/manifest.webmanifest"];
+const CACHE_NAME = "excel-mastery-shell-v2";
+const STATIC_ASSETS = [
+  "/manifest.webmanifest",
+  "/pwa-icon-192.svg",
+  "/pwa-icon-512.svg",
+];
+
+function isNavigationRequest(request) {
+  return request.mode === "navigate";
+}
+
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
+
+  try {
+    const networkResponse = await fetch(request);
+
+    if (networkResponse.ok) {
+      cache.put(request, networkResponse.clone());
+    }
+
+    return networkResponse;
+  } catch (error) {
+    const cachedResponse = await caches.match(request);
+
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+
+    throw error;
+  }
+}
+
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cachedResponse = await caches.match(request);
+
+  const networkPromise = fetch(request)
+    .then((networkResponse) => {
+      if (networkResponse.ok && request.url.startsWith(self.location.origin)) {
+        cache.put(request, networkResponse.clone());
+      }
+
+      return networkResponse;
+    })
+    .catch(() => cachedResponse);
+
+  return cachedResponse ?? networkPromise;
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)),
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)),
   );
   self.skipWaiting();
 });
@@ -26,21 +73,12 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  if (isNavigationRequest(event.request)) {
+    event.respondWith(networkFirst(event.request));
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-
-      return fetch(event.request).then((networkResponse) => {
-        const responseClone = networkResponse.clone();
-
-        if (networkResponse.ok && event.request.url.startsWith(self.location.origin)) {
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
-        }
-
-        return networkResponse;
-      });
-    }),
+    staleWhileRevalidate(event.request),
   );
 });

@@ -20,6 +20,7 @@ Supported runtime for active use:
 - Challenge workspace: one formulas challenge rendered with a collapsible scenario brief, progress badges, reset action, formula bar, spreadsheet grid, answer checking, hint reveal, review card, and next-challenge continuation button
 - Windows launcher: double-click VBScript files for opening and stopping the app without manual command-line usage
 - PWA baseline: web manifest, service worker registration, and installable browser-app path
+- PWA baseline: web manifest, service worker registration, installable browser-app path, and network-first navigation caching to reduce stale shell issues after updates
 - Electron desktop shell: built app can run in a dedicated native window instead of only through the browser
 - Styling system: Tailwind import plus global dark-theme baseline styles
 - Formulas track data model: track metadata, tier metadata, challenge bank, and curriculum phase definitions
@@ -74,6 +75,7 @@ Supported runtime for active use:
 ## Runtime Notes
 - Browser/PWA is the only supported path for active testing until another runtime is explicitly revalidated.
 - New launcher or desktop approaches must not be treated as the default path until the user confirms the UI renders correctly.
+- The service worker now uses network-first handling for page navigations so browser launches pick up newer app shells more reliably after updates.
 
 ## Current Direction
 Active build-out. The immediate focus is expanding the persisted learning state beyond basic completion so XP, stars, recommendations, and eventually unlock thresholds have a clearer long-term progression model.

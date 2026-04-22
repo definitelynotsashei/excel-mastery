@@ -36,6 +36,7 @@ All notable changes to this project are documented in this file.
 - Session-only progress tracking that updates dashboard recommendations, session XP and level, tier completion counts, unlock badges, and solved challenge markers.
 - Persistence-backed progress using a storage adapter with IndexedDB fallback, plus autosave and hydration so formulas completion survives reloads and relaunches.
 - Resume-state persistence so the app restores the last active view and formulas challenge instead of always reopening at the default dashboard state.
+- Service-worker cache strategy fix so browser/PWA launches stop preferring stale cached app shells for navigations after updates.
 
 ### Changed
 - Established default engineering and documentation workflow.
