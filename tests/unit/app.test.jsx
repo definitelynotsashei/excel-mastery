@@ -11,6 +11,8 @@ describe("App", () => {
       }),
     ).toBeInTheDocument();
 
-    expect(screen.getByText(/milestone 1: challenge model and curriculum data/i)).toBeInTheDocument();
+    expect(screen.getByText(/milestone 3: sandbox grid and formula bar/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /reset/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/formula input/i)).toBeInTheDocument();
   });
 });
