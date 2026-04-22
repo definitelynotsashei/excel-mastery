@@ -1,50 +1,48 @@
 # Project State
 
-Last reviewed: YYYY-MM-DD
+Last reviewed: 2026-04-21
 
 ## Summary
 This document describes implemented behavior only.
 
-[Write a short factual summary of what the product currently does.]
+Excel Mastery currently provides a frontend scaffold for the planned training app. The repository now includes a Vite + React application shell, Tailwind-based global styling, ESLint configuration, and Vitest-based unit test setup. The UI currently presents a static landing screen that summarizes the project direction and milestone focus.
 
 ## Current Product Definition
-[Describe the main user workflow in plain language.]
+There is not yet a functional learning workflow. The current app boots into a static overview screen that confirms the initial scaffold is working and the project is ready for the first implementation milestone.
 
 ## Core Surfaces
-- [Surface 1]: [What exists now]
-- [Surface 2]: [What exists now]
-- [Surface 3]: [What exists now]
-- [Surface 4]: [What exists now]
+- App shell: React entry point rendered through Vite
+- Landing screen: static milestone and module summary card layout
+- Styling system: Tailwind import plus global dark-theme baseline styles
+- Verification setup: ESLint and Vitest configuration with one app render smoke test
 
 ## Persistence and Portability
 - Persisted data:
-  - [list persisted slices]
+  - none yet
 - Storage mechanism:
-  - [localStorage / database / backend / file-based / etc.]
+  - none yet
 - Import/export:
-  - [exists / not yet implemented]
+  - not yet implemented
 - Compatibility guarantees:
-  - [state any promises already in effect]
+  - no persistence contract exists yet
+  - the future runtime storage API is expected to be isolated behind an adapter layer
 
 ## Protected Flows
 - app startup
-- create record
-- edit record
-- delete/archive record
-- import/export
-- search/filter
-- theme application
-- [add product-specific critical flows]
+- render landing screen
+- run unit tests
+- run lint
+- run production build
 
 ## Verification Baseline
-- `[replace with test command]`
-- `[replace with lint command]`
-- `[replace with build command if applicable]`
+- `npm.cmd run test`
+- `npm.cmd run lint`
+- `npm.cmd run build`
 
 ## Known Limits
-- [Limit 1]
-- [Limit 2]
-- [Limit 3]
+- No challenge workflow exists yet.
+- No formula engine exists yet.
+- No persistence, navigation, or track progression exists yet.
 
 ## Current Direction
-[State whether the project is in active build-out, stabilization, migration, or maintenance mode.]
+Active build-out. The immediate focus is milestone 0 and milestone 1: locking the scaffold, data contracts, and initial formulas-track content model before implementing the formula engine.
