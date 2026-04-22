@@ -36,4 +36,4 @@ All notable changes to this project are documented in this file.
 - Updated the application shell to surface real formulas-track planning data instead of scaffold-only placeholder content.
 
 ### Fixed
-- Use this section only for real bug fixes.
+- Fixed the desktop shell blank-window issue by changing the Vite build output to use relative asset paths, so Electron can load bundled JS and CSS from `dist` correctly.
