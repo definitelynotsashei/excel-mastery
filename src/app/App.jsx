@@ -1,10 +1,15 @@
 import { useMemo, useState } from "react";
+import { APP_VIEWS } from "./routes";
+import {
+  getDefaultFormulasChallenge,
+  getRecommendedChallenge,
+  summarizeTierDrafts,
+} from "./app-shell";
 import FormulaBar from "../features/formulas/components/FormulaBar";
 import SpreadsheetGrid from "../features/formulas/components/SpreadsheetGrid";
-import { formulaChallenges, getChallengeById, getChallengesByTier } from "../features/formulas/data/challenges";
+import { formulaChallenges, getChallengesByTier } from "../features/formulas/data/challenges";
 import { formulasCurriculum } from "../features/formulas/data/curriculum";
 import { formulasTrack } from "../features/formulas/data/tracks";
-import { formulasTrackTiers } from "../features/formulas/data/tiers";
 import { selectGridCell, updateCellFormula } from "../features/formulas/lib/grid-actions";
 import {
   createChallengeGridState,
@@ -15,31 +20,51 @@ import { getCellFormula, isEditableTargetCell } from "../features/formulas/lib/g
 import { sumChallengeXp } from "../lib/progression/xp";
 
 const milestoneChecklist = [
-  "Project scaffold and build tooling",
-  "Challenge schema and formulas curriculum",
-  "Formula engine core",
-  "Spreadsheet sandbox",
-  "Validation, hints, and completion flow",
+  "Formula engine and challenge data are in place",
+  "Dashboard and track navigation are now testable",
+  "Spreadsheet sandbox handles real formula input",
+  "Validation, hints, and review states come next",
 ];
 
-const moduleGroups = [
+const trackCards = [
   {
-    title: "App Shell",
-    body: "Navigation between dashboard, track view, and challenge view starts here.",
+    id: "formulas",
+    title: "Formulas & Functions",
+    accent: "border-violet-400/30 bg-violet-400/10 text-violet-100",
+    status: "Available now",
+    summary:
+      "Hands-on spreadsheet scenarios with real formulas, live calculation, and a challenge sandbox.",
   },
   {
-    title: "Formula Engine",
-    body: "Pure helpers will parse formulas, resolve references, and evaluate supported functions.",
+    id: "analysis",
+    title: "Data Analysis",
+    accent: "border-sky-400/30 bg-sky-400/10 text-sky-100",
+    status: "Planned",
+    summary: "Reason through sorting, filtering, KPI interpretation, and reporting choices.",
   },
   {
-    title: "Progression",
-    body: "XP, stars, unlocks, and persistence stay outside presentation code.",
+    id: "shortcuts",
+    title: "Keyboard Shortcuts",
+    accent: "border-amber-400/30 bg-amber-400/10 text-amber-100",
+    status: "Planned",
+    summary: "Build speed with timed drills for navigation, selection, editing, and formatting.",
+  },
+  {
+    id: "charts",
+    title: "Charts & Visualization",
+    accent: "border-emerald-400/30 bg-emerald-400/10 text-emerald-100",
+    status: "Planned",
+    summary: "Choose the right chart and critique business reporting visuals with confidence.",
   },
 ];
 
 function App() {
-  const activeChallenge =
-    getChallengeById("formulas-beginner-sum-q1-west") ?? formulaChallenges[0];
+  const recommendedChallenge = getRecommendedChallenge();
+  const [currentView, setCurrentView] = useState(APP_VIEWS.dashboard);
+  const [activeChallenge, setActiveChallenge] = useState(
+    () => getDefaultFormulasChallenge() ?? formulaChallenges[0],
+  );
+  const tierSummaries = summarizeTierDrafts();
   const challengeCount = formulaChallenges.length;
   const totalXp = sumChallengeXp(formulaChallenges);
   const [gridState, setGridState] = useState(() => createChallengeGridState(activeChallenge));
@@ -67,192 +92,357 @@ function App() {
     setGridState(createChallengeGridState(activeChallenge));
   }
 
+  function openTrackView() {
+    setCurrentView(APP_VIEWS.track);
+  }
+
+  function openChallenge(challenge) {
+    setActiveChallenge(challenge);
+    setGridState(createChallengeGridState(challenge));
+    setCurrentView(APP_VIEWS.challenge);
+  }
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(91,72,179,0.28),_transparent_32%),linear-gradient(180deg,_#07111f_0%,_#040914_100%)] px-6 py-10 text-slate-100">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <header className="flex flex-col gap-4 rounded-[28px] border border-white/10 bg-slate-950/70 p-8 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur">
-          <span className="text-sm uppercase tracking-[0.35em] text-cyan-300/80">
-            Excel Mastery
-          </span>
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl">
-              <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+              <span className="text-sm uppercase tracking-[0.35em] text-cyan-300/80">
+                Excel Mastery
+              </span>
+              <h1 className="mt-4 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
                 Premium Excel training built around realistic spreadsheet work.
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
-                The repository now includes the formulas-track data model, a
-                working formula engine, and the first interactive spreadsheet
-                sandbox slice wired to a real challenge.
+                The app shell now mirrors the real product direction: dashboard,
+                formulas track overview, and a challenge workspace built around the
+                spreadsheet sandbox.
               </p>
             </div>
-            <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/10 px-5 py-4 text-sm text-cyan-100">
-              <div className="font-medium text-cyan-200">Current focus</div>
-              <div className="mt-1">Milestone 3: sandbox grid and formula bar</div>
+            <div className="grid gap-3 sm:grid-cols-3 lg:w-[26rem]">
+              <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/10 px-5 py-4 text-sm text-cyan-100">
+                <div className="font-medium text-cyan-200">Current focus</div>
+                <div className="mt-1">Product UI shell</div>
+              </div>
+              <div className="rounded-2xl border border-violet-400/20 bg-violet-400/10 px-5 py-4 text-sm text-violet-100">
+                <div className="font-medium text-violet-200">Challenge bank</div>
+                <div className="mt-1">{challengeCount} drafted formulas</div>
+              </div>
+              <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-5 py-4 text-sm text-emerald-100">
+                <div className="font-medium text-emerald-200">Launch scope</div>
+                <div className="mt-1">{formulasCurriculum.launch.functions.length} functions</div>
+              </div>
             </div>
           </div>
+          <nav className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              className={`rounded-full px-4 py-2 text-sm transition ${
+                currentView === APP_VIEWS.dashboard
+                  ? "bg-white text-slate-950"
+                  : "border border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/[0.08]"
+              }`}
+              onClick={() => setCurrentView(APP_VIEWS.dashboard)}
+            >
+              Dashboard
+            </button>
+            <button
+              type="button"
+              className={`rounded-full px-4 py-2 text-sm transition ${
+                currentView === APP_VIEWS.track
+                  ? "bg-white text-slate-950"
+                  : "border border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/[0.08]"
+              }`}
+              onClick={openTrackView}
+            >
+              Formulas Track
+            </button>
+            <button
+              type="button"
+              className={`rounded-full px-4 py-2 text-sm transition ${
+                currentView === APP_VIEWS.challenge
+                  ? "bg-white text-slate-950"
+                  : "border border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/[0.08]"
+              }`}
+              onClick={() => setCurrentView(APP_VIEWS.challenge)}
+            >
+              Challenge Workspace
+            </button>
+          </nav>
         </header>
 
-        <section className="grid gap-6 lg:grid-cols-[1.35fr_0.95fr]">
-          <article className="rounded-[24px] border border-white/10 bg-slate-900/75 p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-white">Delivery sequence</h2>
-              <span className="rounded-full border border-violet-400/30 bg-violet-400/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-violet-200">
-                {formulasTrack.label}
-              </span>
-            </div>
-            <ol className="mt-6 grid gap-3">
-              {milestoneChecklist.map((item, index) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-4 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-4"
-                >
-                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-400/15 text-sm font-medium text-violet-200">
-                    {index + 1}
+        {currentView === APP_VIEWS.dashboard && (
+          <>
+            <section className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
+              <article className="rounded-[24px] border border-white/10 bg-slate-900/75 p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-white">Recommended next challenge</h2>
+                  <span className="rounded-full border border-violet-400/30 bg-violet-400/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-violet-200">
+                    {formulasTrack.label}
                   </span>
-                  <span className="text-slate-200">{item}</span>
-                </li>
-              ))}
-            </ol>
-          </article>
+                </div>
+                <div className="mt-6 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+                  <div>
+                    <div className="text-sm uppercase tracking-[0.22em] text-slate-400">
+                      Beginner workspace
+                    </div>
+                    <h3 className="mt-2 text-3xl font-semibold text-white">
+                      {recommendedChallenge?.title}
+                    </h3>
+                    <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+                      {recommendedChallenge?.scenario}
+                    </p>
+                    <p className="mt-4 text-sm text-slate-400">
+                      Objective: {recommendedChallenge?.learningObjective}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="rounded-full bg-white px-5 py-3 text-sm font-medium text-slate-950 transition hover:bg-slate-200"
+                    onClick={() => openChallenge(recommendedChallenge)}
+                  >
+                    Open Challenge
+                  </button>
+                </div>
+              </article>
 
-          <aside className="rounded-[24px] border border-white/10 bg-slate-900/75 p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
-            <h2 className="text-xl font-semibold text-white">Track snapshot</h2>
-            <div className="mt-5 rounded-2xl border border-white/8 bg-white/[0.03] p-4">
-              <div className="text-sm uppercase tracking-[0.2em] text-cyan-200">
-                Launch scope
+              <aside className="rounded-[24px] border border-white/10 bg-slate-900/75 p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+                <h2 className="text-xl font-semibold text-white">Snapshot</h2>
+                <div className="mt-5 grid gap-4">
+                  <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+                    <div className="text-xs uppercase tracking-[0.22em] text-slate-400">XP Map</div>
+                    <div className="mt-2 text-2xl font-semibold text-white">{totalXp}</div>
+                    <div className="mt-1 text-sm text-slate-400">drafted total XP across formulas content</div>
+                  </div>
+                  <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+                    <div className="text-xs uppercase tracking-[0.22em] text-slate-400">Launch Functions</div>
+                    <div className="mt-2 text-2xl font-semibold text-white">
+                      {formulasCurriculum.launch.functions.length}
+                    </div>
+                    <div className="mt-1 text-sm text-slate-400">current engine-backed launch scope</div>
+                  </div>
+                  <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+                    <div className="text-xs uppercase tracking-[0.22em] text-slate-400">Milestone Readiness</div>
+                    <ol className="mt-3 grid gap-3 text-sm text-slate-300">
+                      {milestoneChecklist.map((item, index) => (
+                        <li key={item} className="flex items-start gap-3">
+                          <span className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-400/15 text-xs text-emerald-200">
+                            {index + 1}
+                          </span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                </div>
+              </aside>
+            </section>
+
+            <section className="grid gap-6 lg:grid-cols-4">
+              {trackCards.map((track) => (
+                <article
+                  key={track.id}
+                  className="rounded-[24px] border border-white/10 bg-slate-900/75 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.35)]"
+                >
+                  <div className={`inline-flex rounded-full border px-3 py-1 text-xs uppercase tracking-[0.22em] ${track.accent}`}>
+                    {track.status}
+                  </div>
+                  <h2 className="mt-4 text-xl font-semibold text-white">{track.title}</h2>
+                  <p className="mt-3 text-sm leading-6 text-slate-300">{track.summary}</p>
+                  {track.id === "formulas" ? (
+                    <button
+                      type="button"
+                      className="mt-5 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-100 transition hover:bg-white/[0.08]"
+                      onClick={openTrackView}
+                    >
+                      View Track
+                    </button>
+                  ) : (
+                    <div className="mt-5 text-sm text-slate-500">Track shell planned after formulas v1.</div>
+                  )}
+                </article>
+              ))}
+            </section>
+          </>
+        )}
+
+        {currentView === APP_VIEWS.track && (
+          <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+            <aside className="rounded-[24px] border border-white/10 bg-slate-900/75 p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-semibold text-white">{formulasTrack.label}</h2>
+                <span className="rounded-full border border-violet-400/30 bg-violet-400/10 px-3 py-1 text-xs uppercase tracking-[0.22em] text-violet-200">
+                  Active track
+                </span>
               </div>
-              <div className="mt-3 grid gap-2 text-sm text-slate-300">
-                <div>{challengeCount} drafted formula challenges</div>
-                <div>{formulasCurriculum.launch.functions.length} launch functions</div>
-                <div>{totalXp} total XP across drafted content</div>
+              <p className="mt-4 text-sm leading-6 text-slate-300">{formulasTrack.description}</p>
+              <div className="mt-6 rounded-[22px] border border-white/10 bg-slate-950/70 p-4">
+                <div className="text-xs uppercase tracking-[0.22em] text-slate-400">Dashboard summary</div>
+                <p className="mt-2 text-sm leading-6 text-slate-200">{formulasTrack.dashboardSummary}</p>
               </div>
-            </div>
-            <div className="mt-5 grid gap-4">
-              {formulasTrackTiers.map((tier) => (
+              <div className="mt-4 rounded-[22px] border border-white/10 bg-slate-950/70 p-4">
+                <div className="text-xs uppercase tracking-[0.22em] text-slate-400">Launch functions</div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {formulasCurriculum.launch.functions.map((formulaName) => (
+                    <span
+                      key={formulaName}
+                      className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-slate-200"
+                    >
+                      {formulaName}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </aside>
+
+            <div className="grid gap-4">
+              {tierSummaries.map((tier) => (
                 <section
                   key={tier.id}
-                  className="rounded-2xl border border-white/8 bg-white/[0.03] p-4"
+                  className="rounded-[24px] border border-white/10 bg-slate-900/75 p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]"
                 >
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-200">
-                    {tier.label}
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-300">
-                    {tier.summary}
-                  </p>
-                  <div className="mt-3 text-sm text-slate-400">
-                    {getChallengesByTier(tier.id).length} drafted challenges
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-xl font-semibold text-white">{tier.label}</h2>
+                      <p className="mt-2 text-sm leading-6 text-slate-300">{tier.summary}</p>
+                    </div>
+                    <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-200">
+                      {tier.challengeCount} challenges
+                    </div>
+                  </div>
+                  <div className="mt-5 grid gap-3">
+                    {getChallengesByTier(tier.id).map((challenge) => (
+                      <button
+                        key={challenge.id}
+                        type="button"
+                        className={`rounded-2xl border px-4 py-4 text-left transition ${
+                          activeChallenge.id === challenge.id
+                            ? "border-violet-400/40 bg-violet-400/12"
+                            : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
+                        }`}
+                        onClick={() => openChallenge(challenge)}
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <div>
+                            <div className="text-sm font-medium text-white">{challenge.title}</div>
+                            <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500">
+                              {challenge.department}
+                            </div>
+                          </div>
+                          <div className="text-sm text-slate-400">{challenge.xp} XP</div>
+                        </div>
+                        <p className="mt-3 text-sm leading-6 text-slate-300">
+                          {challenge.learningObjective}
+                        </p>
+                      </button>
+                    ))}
                   </div>
                 </section>
               ))}
             </div>
-          </aside>
-        </section>
+          </section>
+        )}
 
-        <section className="rounded-[24px] border border-white/10 bg-slate-900/75 p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-white">Planned modules</h2>
-            <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-emerald-200">
-              Launch functions
-            </span>
-          </div>
-          <div className="mt-5 flex flex-wrap gap-2">
-            {formulasCurriculum.launch.functions.map((formulaName) => (
-              <span
-                key={formulaName}
-                className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-slate-200"
-              >
-                {formulaName}
-              </span>
-            ))}
-          </div>
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {moduleGroups.map((group) => (
-              <section
-                key={group.title}
-                className="rounded-2xl border border-white/8 bg-white/[0.03] p-4"
-              >
-                <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-200">
-                  {group.title}
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-slate-300">{group.body}</p>
-              </section>
-            ))}
-          </div>
-        </section>
-
-        <section className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
-          <article className="rounded-[24px] border border-white/10 bg-slate-900/75 p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
-                  Sandbox preview
+        {currentView === APP_VIEWS.challenge && (
+          <section className="grid gap-6 lg:grid-cols-[0.88fr_1.12fr]">
+            <article className="rounded-[24px] border border-white/10 bg-slate-900/75 p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+                    Challenge workspace
+                  </div>
+                  <h2 className="mt-2 text-2xl font-semibold text-white">
+                    {activeChallenge.title}
+                  </h2>
+                  <p className="mt-3 text-sm leading-6 text-slate-300">
+                    {activeChallenge.scenario}
+                  </p>
                 </div>
-                <h2 className="mt-2 text-2xl font-semibold text-white">
-                  {activeChallenge.title}
-                </h2>
-                <p className="mt-3 text-sm leading-6 text-slate-300">
-                  {activeChallenge.scenario}
-                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-200 transition hover:bg-white/[0.08]"
+                    onClick={openTrackView}
+                  >
+                    Back To Track
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-200 transition hover:bg-white/[0.08]"
+                    onClick={handleResetChallenge}
+                  >
+                    Reset
+                  </button>
+                </div>
               </div>
-              <button
-                type="button"
-                className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-200 transition hover:bg-white/[0.08]"
-                onClick={handleResetChallenge}
-              >
-                Reset
-              </button>
+
+              <div className="mt-6 grid gap-4">
+                <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-4">
+                  <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+                    Learning objective
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-slate-200">
+                    {activeChallenge.learningObjective}
+                  </p>
+                </div>
+                <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-4">
+                  <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+                    Editable target
+                  </div>
+                  <p className="mt-2 text-sm text-slate-200">
+                    Enter your answer in {activeChallenge.targetCells.join(", ")} using
+                    the formula bar.
+                  </p>
+                </div>
+                <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-4">
+                  <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+                    Current cell status
+                  </div>
+                  <div className="mt-2 text-sm text-slate-200">
+                    {activeCellEvaluation.status === "ok" && `Computed value: ${String(activeCellEvaluation.value)}`}
+                    {activeCellEvaluation.status === "error" &&
+                      `Formula error: ${activeCellEvaluation.error?.message ?? "Unknown error"}`}
+                    {activeCellEvaluation.status === "idle" &&
+                      "Select the highlighted answer cell and type a formula to see the result."}
+                  </div>
+                </div>
+                <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-4">
+                  <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+                    Supported functions for this challenge
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {activeChallenge.supportedFunctions.map((formulaName) => (
+                      <span
+                        key={formulaName}
+                        className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-slate-200"
+                      >
+                        {formulaName}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <div className="flex flex-col gap-4">
+              <FormulaBar
+                activeCell={gridState.activeCell}
+                formula={activeFormula}
+                editable={activeCellEditable}
+                onFormulaChange={handleFormulaChange}
+              />
+              <SpreadsheetGrid
+                challenge={activeChallenge}
+                gridState={gridState}
+                evaluationState={evaluationState}
+                onSelectCell={(cellRef) =>
+                  setGridState((currentState) => selectGridCell(currentState, cellRef))
+                }
+              />
             </div>
-
-            <div className="mt-6 grid gap-4">
-              <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-4">
-                <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
-                  Learning objective
-                </div>
-                <p className="mt-2 text-sm leading-6 text-slate-200">
-                  {activeChallenge.learningObjective}
-                </p>
-              </div>
-              <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-4">
-                <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
-                  Editable target
-                </div>
-                <p className="mt-2 text-sm text-slate-200">
-                  Enter your answer in {activeChallenge.targetCells.join(", ")} using
-                  the formula bar.
-                </p>
-              </div>
-              <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-4">
-                <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
-                  Cell status
-                </div>
-                <div className="mt-2 text-sm text-slate-200">
-                  {activeCellEvaluation.status === "ok" && `Computed value: ${String(activeCellEvaluation.value)}`}
-                  {activeCellEvaluation.status === "error" &&
-                    `Formula error: ${activeCellEvaluation.error?.message ?? "Unknown error"}`}
-                  {activeCellEvaluation.status === "idle" &&
-                    "Select the highlighted answer cell and type a formula to see the result."}
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <div className="flex flex-col gap-4">
-            <FormulaBar
-              activeCell={gridState.activeCell}
-              formula={activeFormula}
-              editable={activeCellEditable}
-              onFormulaChange={handleFormulaChange}
-            />
-            <SpreadsheetGrid
-              challenge={activeChallenge}
-              gridState={gridState}
-              evaluationState={evaluationState}
-              onSelectCell={(cellRef) =>
-                setGridState((currentState) => selectGridCell(currentState, cellRef))
-              }
-            />
-          </div>
-        </section>
+          </section>
+        )}
       </div>
     </main>
   );
