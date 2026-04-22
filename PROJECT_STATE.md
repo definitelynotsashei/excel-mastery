@@ -5,7 +5,7 @@ Last reviewed: 2026-04-21
 ## Summary
 This document describes implemented behavior only.
 
-Excel Mastery currently provides a frontend scaffold, the formulas-track domain model, a growing formula-engine core, the first spreadsheet sandbox slice, and a navigable app shell. The repository now includes a Vite + React application shell, Tailwind-based global styling, ESLint configuration, Vitest-based unit testing, formulas track metadata, tier metadata, challenge definitions, progression helpers for XP, stars, and unlocks, formula-engine modules for tokenization, parsing, references, evaluation, and supported beginner-plus-intermediate functions such as `IF`, `AND`, `OR`, `SUMIF`, `COUNTIF`, `VLOOKUP`, `IFERROR`, and `MONTH`, plus grid-state helpers and UI components for dashboard, formulas track overview, and challenge workspace surfaces.
+Excel Mastery currently provides a frontend scaffold, the formulas-track domain model, a growing formula-engine core, the first spreadsheet sandbox slice, a navigable app shell, and the first PWA install baseline. The repository now includes a Vite + React application shell, Tailwind-based global styling, ESLint configuration, Vitest-based unit testing, formulas track metadata, tier metadata, challenge definitions, progression helpers for XP, stars, and unlocks, formula-engine modules for tokenization, parsing, references, evaluation, and supported beginner-plus-intermediate functions such as `IF`, `AND`, `OR`, `SUMIF`, `COUNTIF`, `VLOOKUP`, `IFERROR`, and `MONTH`, plus grid-state helpers and UI components for dashboard, formulas track overview, and challenge workspace surfaces.
 
 ## Current Product Definition
 There is not yet a full learning workflow, but the app now boots into a navigable product shell. The user can move between a dashboard, a formulas track overview, and a challenge workspace. Inside the challenge workspace, the user can select cells, edit the target answer cell through the formula bar, see computed output rendered back into the grid, and reset the challenge preview state.
@@ -16,6 +16,7 @@ There is not yet a full learning workflow, but the app now boots into a navigabl
 - Track view: formulas-track overview plus tier-grouped challenge list
 - Challenge workspace: one formulas challenge rendered with scenario details, reset action, formula bar, and spreadsheet grid
 - Windows launcher: double-click VBScript files for opening and stopping the app without manual command-line usage
+- PWA baseline: web manifest, service worker registration, and installable browser-app path
 - Electron desktop shell: built app can run in a dedicated native window instead of only through the browser
 - Styling system: Tailwind import plus global dark-theme baseline styles
 - Formulas track data model: track metadata, tier metadata, challenge bank, and curriculum phase definitions
@@ -59,6 +60,7 @@ There is not yet a full learning workflow, but the app now boots into a navigabl
 - The launcher uses a fixed Excel-Mastery-specific local port and now fails fast instead of opening unrelated apps on occupied ports.
 - The Electron shell is runnable locally but is not yet packaged into an installer or standalone `.exe`.
 - The Electron shell now loads the built app through an internal local server rather than opening `dist/index.html` directly.
+- The supported runtime for actual use is now the browser/PWA path, while the Electron shell remains experimental.
 
 ## Current Direction
 Active build-out. The immediate focus is layering validation, hints, and completion behavior on top of the new dashboard, track, and challenge shell so the UI can start behaving like the actual learning product.

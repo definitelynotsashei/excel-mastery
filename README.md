@@ -39,10 +39,23 @@ This will:
 - build the current app
 - start a hidden local server
 - open Excel Mastery in your default browser automatically on a project-specific local port
+- let you install it from Edge or Chrome as an app window once it opens
 
 To stop the hidden app server, use:
 
 - `Close Excel Mastery.vbs`
+
+## Recommended Runtime
+
+The supported path for active use right now is:
+- browser or installed PWA
+
+Recommended flow:
+1. Double-click `Open Excel Mastery.vbs`
+2. Let the app open in Edge or Chrome
+3. Use the browser's `Install app` / `Install this site as an app` option
+
+This is the most reliable way to run Excel Mastery while the product is still in active build-out.
 
 ## Open As A Desktop App
 
