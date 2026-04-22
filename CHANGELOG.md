@@ -28,6 +28,7 @@ All notable changes to this project are documented in this file.
 - Windows double-click launcher and stop scripts so the app can be opened without manually using the command prompt.
 - Launcher fix so Excel Mastery uses its own local port instead of opening an unrelated app already running on a shared preview port.
 - Electron desktop shell and desktop-launch VBScript so Excel Mastery can run as its own application window instead of only in the browser.
+- Desktop-shell load-path fix so Electron serves the built app internally over HTTP instead of relying on direct `file://` asset loading.
 
 ### Changed
 - Established default engineering and documentation workflow.

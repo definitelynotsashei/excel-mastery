@@ -58,6 +58,7 @@ There is not yet a full learning workflow, but the app now boots into a navigabl
 - The current launcher still opens the app in the browser; it is not yet a packaged native desktop application.
 - The launcher uses a fixed Excel-Mastery-specific local port and now fails fast instead of opening unrelated apps on occupied ports.
 - The Electron shell is runnable locally but is not yet packaged into an installer or standalone `.exe`.
+- The Electron shell now loads the built app through an internal local server rather than opening `dist/index.html` directly.
 
 ## Current Direction
 Active build-out. The immediate focus is layering validation, hints, and completion behavior on top of the new dashboard, track, and challenge shell so the UI can start behaving like the actual learning product.

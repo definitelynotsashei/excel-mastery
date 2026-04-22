@@ -52,5 +52,5 @@ For a true desktop window instead of a browser tab, use:
 
 This will:
 - build the current app
-- launch Excel Mastery inside an Electron desktop window
+- launch Excel Mastery inside an Electron desktop window through an internal local app server
 - avoid the browser for normal use
