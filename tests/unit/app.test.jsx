@@ -11,6 +11,6 @@ describe("App", () => {
       }),
     ).toBeInTheDocument();
 
-    expect(screen.getByText(/milestone 0: scaffold and module boundaries/i)).toBeInTheDocument();
+    expect(screen.getByText(/milestone 1: challenge model and curriculum data/i)).toBeInTheDocument();
   });
 });
