@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { APP_VIEWS } from "./routes";
 import {
   getDefaultFormulasChallenge,
@@ -35,14 +35,16 @@ import {
   getEarnedXp,
   getRecommendedChallenge,
   getSessionLevel,
+  mergeProgressRecords,
   summarizeTierProgress,
 } from "../lib/progression/session-progress";
+import { loadProgressState, saveProgressState } from "../lib/storage/progress-storage";
 
 const milestoneChecklist = [
   "Formula engine and challenge data are in place",
   "Dashboard and track navigation are now testable",
   "Spreadsheet sandbox handles real formula input",
-  "Validation, hints, and review states come next",
+  "Validation, hints, review, and saved progress are active",
 ];
 
 const trackCards = [
@@ -85,6 +87,57 @@ function App() {
   const [attemptState, setAttemptState] = useState(() => createAttemptState());
   const [scenarioExpanded, setScenarioExpanded] = useState(true);
   const [progressByChallengeId, setProgressByChallengeId] = useState({});
+  const [progressHydrated, setProgressHydrated] = useState(false);
+  const [storageStatus, setStorageStatus] = useState("loading");
+  const [gridState, setGridState] = useState(() => createChallengeGridState(activeChallenge));
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function hydrateProgress() {
+      const challengeIds = formulaChallenges.map((challenge) => challenge.id);
+      const loadedProgress = await loadProgressState(challengeIds);
+
+      if (cancelled) {
+        return;
+      }
+
+      setProgressByChallengeId((currentProgress) =>
+        mergeProgressRecords(currentProgress, loadedProgress),
+      );
+      setProgressHydrated(true);
+      setStorageStatus("ready");
+    }
+
+    hydrateProgress();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!progressHydrated) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function persistProgress() {
+      await saveProgressState(progressByChallengeId);
+
+      if (!cancelled) {
+        setStorageStatus("ready");
+      }
+    }
+
+    persistProgress();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [progressByChallengeId, progressHydrated]);
+
   const tierSummaries = useMemo(
     () =>
       summarizeTierProgress({
@@ -94,14 +147,15 @@ function App() {
       }),
     [progressByChallengeId],
   );
+
   const challengeCount = formulaChallenges.length;
   const completedChallengeCount = getCompletedChallengeCount(progressByChallengeId);
   const earnedXp = getEarnedXp(formulaChallenges, progressByChallengeId);
   const totalPossibleXp = formulaChallenges.reduce((total, challenge) => total + challenge.xp, 0);
   const earnedStars = getEarnedStars(progressByChallengeId);
-  const sessionLevel = getSessionLevel(formulaChallenges, progressByChallengeId);
+  const savedLevel = getSessionLevel(formulaChallenges, progressByChallengeId);
   const recommendedChallenge = getRecommendedChallenge(formulaChallenges, progressByChallengeId);
-  const [gridState, setGridState] = useState(() => createChallengeGridState(activeChallenge));
+
   const evaluationState = useMemo(
     () => evaluateGridState(activeChallenge, gridState),
     [activeChallenge, gridState],
@@ -147,12 +201,14 @@ function App() {
 
   function handleCheckAnswer() {
     const validationResult = validateChallenge(activeChallenge, gridState, evaluationState);
+
     setAttemptState((currentState) => {
       const nextAttemptState = applyValidationResult(currentState, validationResult);
 
       if (validationResult.status === "correct") {
         const completionStars = getCompletionStars(nextAttemptState);
 
+        setStorageStatus("saving");
         setProgressByChallengeId((currentProgress) => {
           const previousProgress = currentProgress[activeChallenge.id];
           const previousStars = previousProgress?.starsEarned ?? 0;
@@ -196,7 +252,7 @@ function App() {
             <div className="grid gap-3 sm:grid-cols-3 lg:w-[26rem]">
               <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/10 px-5 py-4 text-sm text-cyan-100">
                 <div className="font-medium text-cyan-200">Current focus</div>
-                <div className="mt-1">Product UI shell</div>
+                <div className="mt-1">Saved learning loop</div>
               </div>
               <div className="rounded-2xl border border-violet-400/20 bg-violet-400/10 px-5 py-4 text-sm text-violet-100">
                 <div className="font-medium text-violet-200">Challenge bank</div>
@@ -258,7 +314,7 @@ function App() {
                 <div className="mt-6 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
                   <div>
                     <div className="text-sm uppercase tracking-[0.22em] text-slate-400">
-                      {completedChallengeCount === challengeCount ? "Track complete" : "Session recommendation"}
+                      {completedChallengeCount === challengeCount ? "Track complete" : "Recommended next"}
                     </div>
                     <h3 className="mt-2 text-3xl font-semibold text-white">
                       {recommendedChallenge?.title}
@@ -270,7 +326,7 @@ function App() {
                       Objective: {recommendedChallenge?.learningObjective}
                     </p>
                     <p className="mt-2 text-sm text-emerald-200">
-                      {completedChallengeCount} of {challengeCount} formulas challenges solved in this session
+                      {completedChallengeCount} of {challengeCount} formulas challenges solved on this device
                     </p>
                   </div>
                   <button
@@ -287,14 +343,29 @@ function App() {
                 <h2 className="text-xl font-semibold text-white">Snapshot</h2>
                 <div className="mt-5 grid gap-4">
                   <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
-                    <div className="text-xs uppercase tracking-[0.22em] text-slate-400">Session XP</div>
+                    <div className="text-xs uppercase tracking-[0.22em] text-slate-400">Saved XP</div>
                     <div className="mt-2 text-2xl font-semibold text-white">{earnedXp}</div>
-                    <div className="mt-1 text-sm text-slate-400">earned out of {totalPossibleXp} drafted formulas XP</div>
+                    <div className="mt-1 text-sm text-slate-400">
+                      earned out of {totalPossibleXp} drafted formulas XP
+                    </div>
                   </div>
                   <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
-                    <div className="text-xs uppercase tracking-[0.22em] text-slate-400">Session Level</div>
-                    <div className="mt-2 text-2xl font-semibold text-white">{sessionLevel}</div>
-                    <div className="mt-1 text-sm text-slate-400">{earnedStars} total stars earned this session</div>
+                    <div className="text-xs uppercase tracking-[0.22em] text-slate-400">Saved Level</div>
+                    <div className="mt-2 text-2xl font-semibold text-white">{savedLevel}</div>
+                    <div className="mt-1 text-sm text-slate-400">
+                      {earnedStars} total stars earned on this device
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+                    <div className="text-xs uppercase tracking-[0.22em] text-slate-400">Progress Save</div>
+                    <div className="mt-2 text-lg font-semibold text-white">
+                      {storageStatus === "loading" && "Loading progress"}
+                      {storageStatus === "saving" && "Saving progress"}
+                      {storageStatus === "ready" && "Saved locally"}
+                    </div>
+                    <div className="mt-1 text-sm text-slate-400">
+                      Progress survives reloads in the browser or installed PWA.
+                    </div>
                   </div>
                   <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
                     <div className="text-xs uppercase tracking-[0.22em] text-slate-400">Milestone Readiness</div>
@@ -397,53 +468,51 @@ function App() {
                     </div>
                   </div>
                   <div className="mt-5 grid gap-3">
-                    {getChallengesByTier(tier.id).map((challenge) => (
-                      (() => {
-                        const challengeProgress = getChallengeCompletion(progressByChallengeId, challenge.id);
-                        const isCompleted = Boolean(challengeProgress?.completed);
+                    {getChallengesByTier(tier.id).map((challenge) => {
+                      const challengeProgress = getChallengeCompletion(progressByChallengeId, challenge.id);
+                      const isCompleted = Boolean(challengeProgress?.completed);
 
-                        return (
-                      <button
-                        key={challenge.id}
-                        type="button"
-                        className={`rounded-2xl border px-4 py-4 text-left transition ${
-                          activeChallenge.id === challenge.id
-                            ? "border-violet-400/40 bg-violet-400/12"
-                            : isCompleted
-                              ? "border-emerald-400/25 bg-emerald-400/10 hover:bg-emerald-400/15"
-                              : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
-                        }`}
-                        disabled={!tier.unlocked}
-                        onClick={() => openChallenge(challenge)}
-                      >
-                        <div className="flex items-center justify-between gap-4">
-                          <div>
-                            <div className="text-sm font-medium text-white">{challenge.title}</div>
-                            <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500">
-                              {challenge.department}
+                      return (
+                        <button
+                          key={challenge.id}
+                          type="button"
+                          className={`rounded-2xl border px-4 py-4 text-left transition ${
+                            activeChallenge.id === challenge.id
+                              ? "border-violet-400/40 bg-violet-400/12"
+                              : isCompleted
+                                ? "border-emerald-400/25 bg-emerald-400/10 hover:bg-emerald-400/15"
+                                : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
+                          }`}
+                          disabled={!tier.unlocked}
+                          onClick={() => openChallenge(challenge)}
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <div>
+                              <div className="text-sm font-medium text-white">{challenge.title}</div>
+                              <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500">
+                                {challenge.department}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-slate-400">
+                              {isCompleted && (
+                                <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-emerald-200">
+                                  Solved {challengeProgress.starsEarned} stars
+                                </span>
+                              )}
+                              <span>{challenge.xp} XP</span>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3 text-sm text-slate-400">
-                            {isCompleted && (
-                              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-emerald-200">
-                                Solved {challengeProgress.starsEarned}★
-                              </span>
-                            )}
-                            <span>{challenge.xp} XP</span>
-                          </div>
-                        </div>
-                        <p className="mt-3 text-sm leading-6 text-slate-300">
-                          {challenge.learningObjective}
-                        </p>
-                        {!tier.unlocked && (
-                          <p className="mt-3 text-xs uppercase tracking-[0.18em] text-slate-500">
-                            Complete enough of the previous tier to unlock this section.
+                          <p className="mt-3 text-sm leading-6 text-slate-300">
+                            {challenge.learningObjective}
                           </p>
-                        )}
-                      </button>
-                        );
-                      })()
-                    ))}
+                          {!tier.unlocked && (
+                            <p className="mt-3 text-xs uppercase tracking-[0.18em] text-slate-500">
+                              Complete enough of the previous tier to unlock this section.
+                            </p>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </section>
               ))}
@@ -472,7 +541,7 @@ function App() {
                   </h2>
                   {activeChallengeProgress?.completed && (
                     <div className="mt-3 inline-flex rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-emerald-200">
-                      Completed in this session • {activeChallengeProgress.starsEarned}★
+                      Completed on this device - {activeChallengeProgress.starsEarned} stars
                     </div>
                   )}
                 </div>

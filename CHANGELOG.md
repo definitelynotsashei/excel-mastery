@@ -34,6 +34,7 @@ All notable changes to this project are documented in this file.
 - Challenge validation flow with answer checking, progressive hints, visible feedback states, and a review card for solved formulas challenges.
 - Challenge progress badges, a collapsible scenario briefing, and next-challenge navigation inside the formulas workspace.
 - Session-only progress tracking that updates dashboard recommendations, session XP and level, tier completion counts, unlock badges, and solved challenge markers.
+- Persistence-backed progress using a storage adapter with IndexedDB fallback, plus autosave and hydration so formulas completion survives reloads and relaunches.
 
 ### Changed
 - Established default engineering and documentation workflow.

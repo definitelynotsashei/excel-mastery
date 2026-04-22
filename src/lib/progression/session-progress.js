@@ -7,6 +7,21 @@ export function getCompletedChallengeIds(progressByChallengeId) {
     .map(([challengeId]) => challengeId);
 }
 
+export function mergeProgressRecords(baseProgressByChallengeId, incomingProgressByChallengeId) {
+  const mergedProgress = { ...baseProgressByChallengeId };
+
+  for (const [challengeId, progress] of Object.entries(incomingProgressByChallengeId)) {
+    const previousProgress = mergedProgress[challengeId];
+
+    mergedProgress[challengeId] = {
+      completed: Boolean(previousProgress?.completed || progress?.completed),
+      starsEarned: Math.max(previousProgress?.starsEarned ?? 0, progress?.starsEarned ?? 0),
+    };
+  }
+
+  return mergedProgress;
+}
+
 export function getChallengeCompletion(progressByChallengeId, challengeId) {
   return progressByChallengeId[challengeId] ?? null;
 }

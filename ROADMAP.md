@@ -10,7 +10,7 @@ Last updated: 2026-04-21
 3. Implement a scoped formula engine for beginner-first scenarios:
    arithmetic, cell references, ranges, and an initial function set such as `SUM`, `AVERAGE`, `COUNT`, `MIN`, `MAX`, `IF`, `SUMIF`, `COUNTIF`, `LEN`, `LEFT`, `RIGHT`, `TRIM`, `UPPER`, `LOWER`, and basic date support if required by launch challenges.
 4. Ship one complete end-to-end learning track first:
-   prioritize `Formulas & Functions` with a representative challenge set, hints, validation feedback, review cards, XP, stars, unlock logic, and `window.storage` persistence.
+   prioritize `Formulas & Functions` with a representative challenge set, hints, validation feedback, review cards, XP, stars, unlock logic, and persisted progress through the app storage adapter.
 
 ## Next
 1. Expand the formula engine to intermediate and advanced coverage:
@@ -19,6 +19,8 @@ Last updated: 2026-04-21
    `Keyboard Shortcuts` timed drills, `Data Analysis` mixed sandbox and reasoning challenges, and `Charts & Visualization` selection and critique challenges.
 3. Improve curriculum depth and polish:
    richer fictional workplace scenarios, recommended-next logic, streak systems, lesson review quality, theming refinement, and broader challenge coverage across departments.
+4. Expand persisted progression:
+   save more than completion state, clarify the long-term XP and unlock model, and decide whether future runtimes should prefer `window.storage`, IndexedDB, or a shared abstraction across both.
 
 ## Deferred
 - Full parity with modern Excel behavior, including every edge case, volatility rule, spill behavior, and exact error semantics.
