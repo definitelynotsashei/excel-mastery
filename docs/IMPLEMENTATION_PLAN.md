@@ -433,7 +433,7 @@ Suggested commit rhythm:
 7. formulas v1 polish
 
 ## Immediate Next Steps
-1. Initialize this folder as the actual Git repository for `excel-mastery`, or replace it with a proper clone if that is the intended source of truth.
-2. Add the project scaffold and lock the toolchain.
-3. Draft the formulas track challenge set against the launch function list.
-4. Implement the formula engine before building the dashboard in depth.
+1. Execute Milestone 2 using the scoped engine plan in `docs/REMAINING_MILESTONE_PLAN.md`.
+2. Keep the formula engine focused on beginner challenge coverage before expanding to conditional and lookup functions.
+3. Build the spreadsheet sandbox only after parser, evaluator, and reference helpers are stable.
+4. Treat Milestones 3 through 7 as gated phases rather than parallel efforts.

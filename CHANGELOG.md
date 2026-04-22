@@ -16,6 +16,7 @@ All notable changes to this project are documented in this file.
 - Formulas track metadata, tier metadata, curriculum scope, and a drafted challenge bank for Milestone 1.
 - Progression helper modules for XP totals, star ratings, and tier unlock logic.
 - Unit coverage for formulas-track data integrity and progression rules.
+- Detailed execution plan for Milestones 2 through 7, including commit slices, acceptance criteria, and feature sequencing.
 
 ### Changed
 - Established default engineering and documentation workflow.
