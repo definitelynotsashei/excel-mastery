@@ -17,6 +17,8 @@ All notable changes to this project are documented in this file.
 - Progression helper modules for XP totals, star ratings, and tier unlock logic.
 - Unit coverage for formulas-track data integrity and progression rules.
 - Detailed execution plan for Milestones 2 through 7, including commit slices, acceptance criteria, and feature sequencing.
+- Formula-engine foundation with tokenizer, parser, reference helpers, evaluator, typed errors, and beginner-function support.
+- Unit coverage for formula parsing, reference handling, unsupported-function errors, and beginner challenge evaluation.
 
 ### Changed
 - Established default engineering and documentation workflow.
