@@ -38,6 +38,7 @@ All notable changes to this project are documented in this file.
 - Resume-state persistence so the app restores the last active view and formulas challenge instead of always reopening at the default dashboard state.
 - Service-worker cache strategy fix so browser/PWA launches stop preferring stale cached app shells for navigations after updates.
 - Best-run persistence for solved formulas challenges, including saved check counts and hint usage, surfaced in the track view and review flow.
+- Session handoff documentation updates covering the validated browser runtime, current persistence scope, and the recommended next build targets for the next session.
 
 ### Changed
 - Established default engineering and documentation workflow.

@@ -22,6 +22,14 @@ Last updated: 2026-04-21
 4. Expand persisted progression:
    save more than completion state, clarify the long-term XP and unlock model, and decide whether future runtimes should prefer `window.storage`, IndexedDB, or a shared abstraction across both.
 
+## Immediate Next Session
+1. Upgrade recommendation logic:
+   stop using a simple first-unsolved rule and instead rank challenges using persisted completion data, current tier readiness, and likely next best lesson value.
+2. Tighten unlock behavior in the UI:
+   make persisted completion clearly drive tier progression and explain unlock thresholds more explicitly on the track screen.
+3. Decide on draft persistence:
+   either persist in-progress formula drafts and partially revealed hints for the active challenge, or explicitly document that unsolved work is intentionally transient.
+
 ## Deferred
 - Full parity with modern Excel behavior, including every edge case, volatility rule, spill behavior, and exact error semantics.
 - Large-scale content expansion to 30-40+ challenges until the core sandbox, challenge schema, and persistence model prove stable.

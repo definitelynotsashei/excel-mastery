@@ -1,6 +1,6 @@
 # Project State
 
-Last reviewed: 2026-04-21
+Last reviewed: 2026-04-22
 
 ## Summary
 This document describes implemented behavior only.
@@ -81,3 +81,18 @@ Supported runtime for active use:
 
 ## Current Direction
 Active build-out. The immediate focus is expanding the persisted learning state beyond basic completion so XP, stars, recommendations, and eventually unlock thresholds have a clearer long-term progression model.
+
+## Next Session Handoff
+- Supported runtime remains the browser/PWA path launched through `Open Excel Mastery.vbs`.
+- Resume behavior is now user-confirmed working after the service-worker cache fix and a hard refresh.
+- Formulas progress now persists:
+  - completion
+  - best stars
+  - best solved-run summary
+  - last active view
+  - last active formulas challenge
+- The next highest-value build target is progression quality, not more storage plumbing:
+  - improve recommendation logic beyond "first unsolved"
+  - make unlock progression clearly driven by persisted completion data
+  - decide whether in-progress draft state should be persisted or intentionally left ephemeral
+- If work continues on persistence, preserve backward compatibility with the existing saved payload shape and keep the storage adapter as the only persistence boundary.
