@@ -45,6 +45,7 @@ describe("App", () => {
     expect(screen.getByText(/the target cell matches the expected result/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /sum adds all numeric values in a range/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /next challenge: average support ticket time/i })).toBeInTheDocument();
+    expect(screen.getByText(/completed in this session/i)).toBeInTheDocument();
   });
 
   it("can collapse the scenario brief and move to the next challenge after completion", () => {
@@ -64,5 +65,29 @@ describe("App", () => {
 
     expect(screen.getByRole("heading", { name: /average support ticket time/i })).toBeInTheDocument();
     expect(screen.getByText(/support wants the average resolution time/i)).toBeInTheDocument();
+  });
+
+  it("updates dashboard and track progress after completing a challenge", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /open challenge/i }));
+    fireEvent.change(screen.getByLabelText(/formula input/i), {
+      target: { value: "=SUM(B2:B5)" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /check answer/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^dashboard$/i }));
+
+    expect(
+      screen.getByText(/1 of 20 formulas challenges solved in this session/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/^25$/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /formulas track/i }));
+
+    expect(screen.getByText(/1\/10 complete/i)).toBeInTheDocument();
+    expect(screen.getByText(/solved 3★/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /average support ticket time/i }),
+    ).toBeInTheDocument();
   });
 });

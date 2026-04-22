@@ -4,8 +4,6 @@ import {
   getDefaultFormulasChallenge,
   getChallengePosition,
   getNextChallenge,
-  getRecommendedChallenge,
-  summarizeTierDrafts,
 } from "./app-shell";
 import FormulaBar from "../features/formulas/components/FormulaBar";
 import FeedbackPanel from "../features/formulas/components/FeedbackPanel";
@@ -13,6 +11,7 @@ import ReviewCard from "../features/formulas/components/ReviewCard";
 import SpreadsheetGrid from "../features/formulas/components/SpreadsheetGrid";
 import { formulaChallenges, getChallengesByTier } from "../features/formulas/data/challenges";
 import { formulasCurriculum } from "../features/formulas/data/curriculum";
+import { formulasTrackTiers } from "../features/formulas/data/tiers";
 import { formulasTrack } from "../features/formulas/data/tracks";
 import {
   applyValidationResult,
@@ -29,7 +28,15 @@ import {
 } from "../features/formulas/lib/grid-model";
 import { getCellFormula, isEditableTargetCell } from "../features/formulas/lib/grid-selectors";
 import { validateChallenge } from "../features/formulas/lib/validate-challenge";
-import { sumChallengeXp } from "../lib/progression/xp";
+import {
+  getChallengeCompletion,
+  getCompletedChallengeCount,
+  getEarnedStars,
+  getEarnedXp,
+  getRecommendedChallenge,
+  getSessionLevel,
+  summarizeTierProgress,
+} from "../lib/progression/session-progress";
 
 const milestoneChecklist = [
   "Formula engine and challenge data are in place",
@@ -71,16 +78,29 @@ const trackCards = [
 ];
 
 function App() {
-  const recommendedChallenge = getRecommendedChallenge();
   const [currentView, setCurrentView] = useState(APP_VIEWS.dashboard);
   const [activeChallenge, setActiveChallenge] = useState(
     () => getDefaultFormulasChallenge() ?? formulaChallenges[0],
   );
   const [attemptState, setAttemptState] = useState(() => createAttemptState());
   const [scenarioExpanded, setScenarioExpanded] = useState(true);
-  const tierSummaries = summarizeTierDrafts();
+  const [progressByChallengeId, setProgressByChallengeId] = useState({});
+  const tierSummaries = useMemo(
+    () =>
+      summarizeTierProgress({
+        tiers: formulasTrackTiers,
+        getChallengesByTier,
+        progressByChallengeId,
+      }),
+    [progressByChallengeId],
+  );
   const challengeCount = formulaChallenges.length;
-  const totalXp = sumChallengeXp(formulaChallenges);
+  const completedChallengeCount = getCompletedChallengeCount(progressByChallengeId);
+  const earnedXp = getEarnedXp(formulaChallenges, progressByChallengeId);
+  const totalPossibleXp = formulaChallenges.reduce((total, challenge) => total + challenge.xp, 0);
+  const earnedStars = getEarnedStars(progressByChallengeId);
+  const sessionLevel = getSessionLevel(formulaChallenges, progressByChallengeId);
+  const recommendedChallenge = getRecommendedChallenge(formulaChallenges, progressByChallengeId);
   const [gridState, setGridState] = useState(() => createChallengeGridState(activeChallenge));
   const evaluationState = useMemo(
     () => evaluateGridState(activeChallenge, gridState),
@@ -95,6 +115,7 @@ function App() {
   const starsEarned = getCompletionStars(attemptState);
   const challengePosition = getChallengePosition(activeChallenge.id);
   const nextChallenge = getNextChallenge(activeChallenge.id);
+  const activeChallengeProgress = getChallengeCompletion(progressByChallengeId, activeChallenge.id);
 
   function handleFormulaChange(nextFormula) {
     if (!activeCellEditable) {
@@ -126,7 +147,28 @@ function App() {
 
   function handleCheckAnswer() {
     const validationResult = validateChallenge(activeChallenge, gridState, evaluationState);
-    setAttemptState((currentState) => applyValidationResult(currentState, validationResult));
+    setAttemptState((currentState) => {
+      const nextAttemptState = applyValidationResult(currentState, validationResult);
+
+      if (validationResult.status === "correct") {
+        const completionStars = getCompletionStars(nextAttemptState);
+
+        setProgressByChallengeId((currentProgress) => {
+          const previousProgress = currentProgress[activeChallenge.id];
+          const previousStars = previousProgress?.starsEarned ?? 0;
+
+          return {
+            ...currentProgress,
+            [activeChallenge.id]: {
+              completed: true,
+              starsEarned: Math.max(previousStars, completionStars),
+            },
+          };
+        });
+      }
+
+      return nextAttemptState;
+    });
   }
 
   function handleRevealHint() {
@@ -216,7 +258,7 @@ function App() {
                 <div className="mt-6 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
                   <div>
                     <div className="text-sm uppercase tracking-[0.22em] text-slate-400">
-                      Beginner workspace
+                      {completedChallengeCount === challengeCount ? "Track complete" : "Session recommendation"}
                     </div>
                     <h3 className="mt-2 text-3xl font-semibold text-white">
                       {recommendedChallenge?.title}
@@ -226,6 +268,9 @@ function App() {
                     </p>
                     <p className="mt-4 text-sm text-slate-400">
                       Objective: {recommendedChallenge?.learningObjective}
+                    </p>
+                    <p className="mt-2 text-sm text-emerald-200">
+                      {completedChallengeCount} of {challengeCount} formulas challenges solved in this session
                     </p>
                   </div>
                   <button
@@ -242,16 +287,14 @@ function App() {
                 <h2 className="text-xl font-semibold text-white">Snapshot</h2>
                 <div className="mt-5 grid gap-4">
                   <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
-                    <div className="text-xs uppercase tracking-[0.22em] text-slate-400">XP Map</div>
-                    <div className="mt-2 text-2xl font-semibold text-white">{totalXp}</div>
-                    <div className="mt-1 text-sm text-slate-400">drafted total XP across formulas content</div>
+                    <div className="text-xs uppercase tracking-[0.22em] text-slate-400">Session XP</div>
+                    <div className="mt-2 text-2xl font-semibold text-white">{earnedXp}</div>
+                    <div className="mt-1 text-sm text-slate-400">earned out of {totalPossibleXp} drafted formulas XP</div>
                   </div>
                   <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
-                    <div className="text-xs uppercase tracking-[0.22em] text-slate-400">Launch Functions</div>
-                    <div className="mt-2 text-2xl font-semibold text-white">
-                      {formulasCurriculum.launch.functions.length}
-                    </div>
-                    <div className="mt-1 text-sm text-slate-400">current engine-backed launch scope</div>
+                    <div className="text-xs uppercase tracking-[0.22em] text-slate-400">Session Level</div>
+                    <div className="mt-2 text-2xl font-semibold text-white">{sessionLevel}</div>
+                    <div className="mt-1 text-sm text-slate-400">{earnedStars} total stars earned this session</div>
                   </div>
                   <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
                     <div className="text-xs uppercase tracking-[0.22em] text-slate-400">Milestone Readiness</div>
@@ -335,23 +378,42 @@ function App() {
                 >
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <h2 className="text-xl font-semibold text-white">{tier.label}</h2>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h2 className="text-xl font-semibold text-white">{tier.label}</h2>
+                        <span
+                          className={`rounded-full border px-3 py-1 text-xs uppercase tracking-[0.18em] ${
+                            tier.unlocked
+                              ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-200"
+                              : "border-slate-400/20 bg-slate-400/10 text-slate-300"
+                          }`}
+                        >
+                          {tier.unlocked ? "Unlocked" : "Locked"}
+                        </span>
+                      </div>
                       <p className="mt-2 text-sm leading-6 text-slate-300">{tier.summary}</p>
                     </div>
                     <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-200">
-                      {tier.challengeCount} challenges
+                      {tier.completedCount}/{tier.challengeCount} complete
                     </div>
                   </div>
                   <div className="mt-5 grid gap-3">
                     {getChallengesByTier(tier.id).map((challenge) => (
+                      (() => {
+                        const challengeProgress = getChallengeCompletion(progressByChallengeId, challenge.id);
+                        const isCompleted = Boolean(challengeProgress?.completed);
+
+                        return (
                       <button
                         key={challenge.id}
                         type="button"
                         className={`rounded-2xl border px-4 py-4 text-left transition ${
                           activeChallenge.id === challenge.id
                             ? "border-violet-400/40 bg-violet-400/12"
-                            : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
+                            : isCompleted
+                              ? "border-emerald-400/25 bg-emerald-400/10 hover:bg-emerald-400/15"
+                              : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
                         }`}
+                        disabled={!tier.unlocked}
                         onClick={() => openChallenge(challenge)}
                       >
                         <div className="flex items-center justify-between gap-4">
@@ -361,12 +423,26 @@ function App() {
                               {challenge.department}
                             </div>
                           </div>
-                          <div className="text-sm text-slate-400">{challenge.xp} XP</div>
+                          <div className="flex items-center gap-3 text-sm text-slate-400">
+                            {isCompleted && (
+                              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-emerald-200">
+                                Solved {challengeProgress.starsEarned}★
+                              </span>
+                            )}
+                            <span>{challenge.xp} XP</span>
+                          </div>
                         </div>
                         <p className="mt-3 text-sm leading-6 text-slate-300">
                           {challenge.learningObjective}
                         </p>
+                        {!tier.unlocked && (
+                          <p className="mt-3 text-xs uppercase tracking-[0.18em] text-slate-500">
+                            Complete enough of the previous tier to unlock this section.
+                          </p>
+                        )}
                       </button>
+                        );
+                      })()
                     ))}
                   </div>
                 </section>
@@ -394,6 +470,11 @@ function App() {
                   <h2 className="mt-2 text-2xl font-semibold text-white">
                     {activeChallenge.title}
                   </h2>
+                  {activeChallengeProgress?.completed && (
+                    <div className="mt-3 inline-flex rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-emerald-200">
+                      Completed in this session • {activeChallengeProgress.starsEarned}★
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <button
