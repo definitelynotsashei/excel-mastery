@@ -19,6 +19,8 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: /q1 west revenue total/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /back to track/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /reset/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /check answer/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /reveal hint/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/formula input/i)).toBeInTheDocument();
   });
 
@@ -29,5 +31,18 @@ describe("App", () => {
 
     expect(screen.getByRole("heading", { name: /formulas & functions/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /q1 west revenue total/i })).toBeInTheDocument();
+  });
+
+  it("shows feedback and review state after solving the recommended challenge", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /open challenge/i }));
+    fireEvent.change(screen.getByLabelText(/formula input/i), {
+      target: { value: "=SUM(B2:B5)" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /check answer/i }));
+
+    expect(screen.getByText(/the target cell matches the expected result/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /sum adds all numeric values in a range/i })).toBeInTheDocument();
   });
 });

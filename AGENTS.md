@@ -33,6 +33,9 @@ Do not make assumptions that are contradicted by the docs or the code.
 - Add or update regression coverage for meaningful fixes.
 - Treat external input as untrusted.
 - Do not take destructive actions without confirmation.
+- Do not treat a new runtime or launcher path as supported until the user has confirmed the UI visibly opens and renders.
+- Prefer the simplest validated runtime first. For this project, browser/PWA is the default supported path unless explicitly revalidated otherwise.
+- When the user cannot see the UI, stop deeper feature work and fix visibility/runtime issues first.
 
 ## Session Checklist
 1. Read `PROJECT_STATE.md`.
@@ -41,6 +44,7 @@ Do not make assumptions that are contradicted by the docs or the code.
 4. Read `CODING_WORKFLOW_PROMPTS.md`.
 5. Inspect the relevant code before making assumptions.
 6. Verify changes before closing the task.
+7. If UI behavior changed, confirm the supported launch path and make sure the user can actually access it.
 
 ## Session Startup Prompt
 Copy and paste this into a new session:

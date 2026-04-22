@@ -15,6 +15,10 @@ Favor small, testable refactors over broad rewrites. Extract pure helpers before
 
 Treat external input as untrusted. Validate and normalize imported data, URLs, and file-based inputs. Do not take destructive actions without confirmation.
 
+For runtime and app-launch work, prefer the simplest verified path. Do not assume a browser launcher, Electron shell, desktop wrapper, or packaging path works until the user has confirmed they can see the UI. If the user cannot access the app visually, stop feature expansion and fix the launch/runtime issue first.
+
+When working on a UI product, do not continue implementing hidden features for long stretches without a user-visible checkpoint. Establish a working launch path early, confirm it, and keep it documented as the supported runtime.
+
 For UI work, preserve readability and contrast across themes. Use semantic styling hooks on theme-sensitive surfaces instead of relying only on inherited utility-class colors.
 
 Do not consider work complete until it has appropriate verification. Run the most relevant tests and lint where applicable. If verification cannot be run, say so clearly.
@@ -31,3 +35,5 @@ Keep documentation truthful: separate implemented behavior, deferred work, legac
 - Treat external input as untrusted.
 - Prefer semantic UI hooks over fragile inherited styles.
 - Optimize for the real workflow, not hypothetical future breadth.
+- Keep one clearly supported launch path documented at all times.
+- Get a visible UI confirmation before building too far past the shell.

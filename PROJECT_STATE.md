@@ -5,16 +5,19 @@ Last reviewed: 2026-04-21
 ## Summary
 This document describes implemented behavior only.
 
-Excel Mastery currently provides a frontend scaffold, the formulas-track domain model, a growing formula-engine core, the first spreadsheet sandbox slice, a navigable app shell, and the first PWA install baseline. The repository now includes a Vite + React application shell, Tailwind-based global styling, ESLint configuration, Vitest-based unit testing, formulas track metadata, tier metadata, challenge definitions, progression helpers for XP, stars, and unlocks, formula-engine modules for tokenization, parsing, references, evaluation, and supported beginner-plus-intermediate functions such as `IF`, `AND`, `OR`, `SUMIF`, `COUNTIF`, `VLOOKUP`, `IFERROR`, and `MONTH`, plus grid-state helpers and UI components for dashboard, formulas track overview, and challenge workspace surfaces.
+Excel Mastery currently provides a frontend scaffold, the formulas-track domain model, a growing formula-engine core, the first spreadsheet sandbox slice, a navigable app shell, the first visible challenge-validation loop, and the first PWA install baseline. The repository now includes a Vite + React application shell, Tailwind-based global styling, ESLint configuration, Vitest-based unit testing, formulas track metadata, tier metadata, challenge definitions, progression helpers for XP, stars, and unlocks, formula-engine modules for tokenization, parsing, references, evaluation, and supported beginner-plus-intermediate functions such as `IF`, `AND`, `OR`, `SUMIF`, `COUNTIF`, `VLOOKUP`, `IFERROR`, and `MONTH`, plus grid-state helpers and UI components for dashboard, formulas track overview, challenge workspace surfaces, feedback, hints, and review cards.
 
 ## Current Product Definition
-There is not yet a full learning workflow, but the app now boots into a navigable product shell. The user can move between a dashboard, a formulas track overview, and a challenge workspace. Inside the challenge workspace, the user can select cells, edit the target answer cell through the formula bar, see computed output rendered back into the grid, and reset the challenge preview state.
+There is not yet a full learning workflow, but the app now boots into a navigable product shell with an initial challenge loop. The user can move between a dashboard, a formulas track overview, and a challenge workspace. Inside the challenge workspace, the user can select cells, edit the target answer cell through the formula bar, see computed output rendered back into the grid, check an answer, reveal progressive hints, and see a review card after solving the challenge.
+
+Supported runtime for active use:
+- Browser or installed PWA launched through `Open Excel Mastery.vbs`
 
 ## Core Surfaces
 - App shell: React entry point rendered through Vite with local view-state navigation between dashboard, track view, and challenge workspace
 - Dashboard: recommended next challenge, track cards, milestone readiness, and launch-scope summary
 - Track view: formulas-track overview plus tier-grouped challenge list
-- Challenge workspace: one formulas challenge rendered with scenario details, reset action, formula bar, and spreadsheet grid
+- Challenge workspace: one formulas challenge rendered with scenario details, reset action, formula bar, spreadsheet grid, answer checking, hint reveal, and review card
 - Windows launcher: double-click VBScript files for opening and stopping the app without manual command-line usage
 - PWA baseline: web manifest, service worker registration, and installable browser-app path
 - Electron desktop shell: built app can run in a dedicated native window instead of only through the browser
@@ -23,8 +26,9 @@ There is not yet a full learning workflow, but the app now boots into a navigabl
 - Progression helpers: pure XP, level, star, and unlock utilities
 - Formula engine: tokenizer, parser, AST evaluator, reference/range helpers, typed engine errors, range-shape support for lookup tables, and supported beginner plus key intermediate functions
 - Grid model: active-cell state, target-cell formula drafts, evaluation mapping, and display selectors for the sandbox
+- Validation flow: challenge-result validation helper, attempt tracking, visible hints, feedback states, and review-card rendering
 - App-shell helpers: recommended challenge and tier summary helpers for UI composition
-- Verification setup: ESLint and Vitest configuration with smoke tests, data-model unit coverage, formula-engine unit coverage, sandbox grid-state coverage, and app-shell navigation coverage
+- Verification setup: ESLint and Vitest configuration with smoke tests, data-model unit coverage, formula-engine unit coverage, sandbox grid-state coverage, app-shell navigation coverage, and validation-flow coverage
 
 ## Persistence and Portability
 - Persisted data:
@@ -39,7 +43,9 @@ There is not yet a full learning workflow, but the app now boots into a navigabl
 
 ## Protected Flows
 - app startup
-- render landing screen
+- render dashboard shell
+- open formulas track
+- open challenge workspace
 - run unit tests
 - run lint
 - run production build
@@ -52,7 +58,7 @@ There is not yet a full learning workflow, but the app now boots into a navigabl
 ## Known Limits
 - No challenge workflow exists yet.
 - No persistence adapter exists yet.
-- No completion, validation-feedback, or hint UI exists yet.
+- No persisted challenge completion state exists yet.
 - Progress and unlock state are not yet reflected in the visible UI.
 - Only one challenge workspace is deeply wired into the sandbox state at a time.
 - Advanced modern-array functions such as `FILTER` and `XLOOKUP` are still unsupported.
@@ -61,6 +67,10 @@ There is not yet a full learning workflow, but the app now boots into a navigabl
 - The Electron shell is runnable locally but is not yet packaged into an installer or standalone `.exe`.
 - The Electron shell now loads the built app through an internal local server rather than opening `dist/index.html` directly.
 - The supported runtime for actual use is now the browser/PWA path, while the Electron shell remains experimental.
+
+## Runtime Notes
+- Browser/PWA is the only supported path for active testing until another runtime is explicitly revalidated.
+- New launcher or desktop approaches must not be treated as the default path until the user confirms the UI renders correctly.
 
 ## Current Direction
 Active build-out. The immediate focus is layering validation, hints, and completion behavior on top of the new dashboard, track, and challenge shell so the UI can start behaving like the actual learning product.

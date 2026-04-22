@@ -30,6 +30,8 @@ All notable changes to this project are documented in this file.
 - Electron desktop shell and desktop-launch VBScript so Excel Mastery can run as its own application window instead of only in the browser.
 - Desktop-shell load-path fix so Electron serves the built app internally over HTTP instead of relying on direct `file://` asset loading.
 - PWA baseline with manifest, service worker, installable browser-app path, and a fix for the missing React import in the app entry point that could cause a blank page at startup.
+- Workflow guardrails for future sessions: validated browser/PWA path as the supported runtime, explicit UI-access confirmation before deeper feature work, and stronger startup rules in repo docs.
+- Challenge validation flow with answer checking, progressive hints, visible feedback states, and a review card for solved formulas challenges.
 
 ### Changed
 - Established default engineering and documentation workflow.

@@ -6,10 +6,19 @@ import {
   summarizeTierDrafts,
 } from "./app-shell";
 import FormulaBar from "../features/formulas/components/FormulaBar";
+import FeedbackPanel from "../features/formulas/components/FeedbackPanel";
+import ReviewCard from "../features/formulas/components/ReviewCard";
 import SpreadsheetGrid from "../features/formulas/components/SpreadsheetGrid";
 import { formulaChallenges, getChallengesByTier } from "../features/formulas/data/challenges";
 import { formulasCurriculum } from "../features/formulas/data/curriculum";
 import { formulasTrack } from "../features/formulas/data/tracks";
+import {
+  applyValidationResult,
+  createAttemptState,
+  getCompletionStars,
+  getVisibleHints,
+  revealNextHint,
+} from "../features/formulas/lib/attempt-state";
 import { selectGridCell, updateCellFormula } from "../features/formulas/lib/grid-actions";
 import {
   createChallengeGridState,
@@ -17,6 +26,7 @@ import {
   evaluateGridState,
 } from "../features/formulas/lib/grid-model";
 import { getCellFormula, isEditableTargetCell } from "../features/formulas/lib/grid-selectors";
+import { validateChallenge } from "../features/formulas/lib/validate-challenge";
 import { sumChallengeXp } from "../lib/progression/xp";
 
 const milestoneChecklist = [
@@ -64,6 +74,7 @@ function App() {
   const [activeChallenge, setActiveChallenge] = useState(
     () => getDefaultFormulasChallenge() ?? formulaChallenges[0],
   );
+  const [attemptState, setAttemptState] = useState(() => createAttemptState());
   const tierSummaries = summarizeTierDrafts();
   const challengeCount = formulaChallenges.length;
   const totalXp = sumChallengeXp(formulaChallenges);
@@ -77,6 +88,8 @@ function App() {
   const activeCellEvaluation =
     evaluationState[gridState.activeCell] ??
     createEmptyEvaluationState(activeChallenge)[gridState.activeCell];
+  const visibleHints = getVisibleHints(activeChallenge, attemptState);
+  const starsEarned = getCompletionStars(attemptState);
 
   function handleFormulaChange(nextFormula) {
     if (!activeCellEditable) {
@@ -90,6 +103,7 @@ function App() {
 
   function handleResetChallenge() {
     setGridState(createChallengeGridState(activeChallenge));
+    setAttemptState(createAttemptState());
   }
 
   function openTrackView() {
@@ -99,7 +113,17 @@ function App() {
   function openChallenge(challenge) {
     setActiveChallenge(challenge);
     setGridState(createChallengeGridState(challenge));
+    setAttemptState(createAttemptState());
     setCurrentView(APP_VIEWS.challenge);
+  }
+
+  function handleCheckAnswer() {
+    const validationResult = validateChallenge(activeChallenge, gridState, evaluationState);
+    setAttemptState((currentState) => applyValidationResult(currentState, validationResult));
+  }
+
+  function handleRevealHint() {
+    setAttemptState((currentState) => revealNextHint(currentState, activeChallenge));
   }
 
   return (
@@ -409,6 +433,29 @@ function App() {
                 </div>
                 <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-4">
                   <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+                    Hints
+                  </div>
+                  <div className="mt-3 grid gap-3">
+                    {visibleHints.length === 0 && (
+                      <p className="text-sm text-slate-400">
+                        No hints revealed yet. Use the hint button when you want guided support.
+                      </p>
+                    )}
+                    {visibleHints.map((hint, index) => (
+                      <div
+                        key={`${activeChallenge.id}-hint-${index + 1}`}
+                        className="rounded-2xl border border-white/10 bg-white/[0.03] p-3"
+                      >
+                        <div className="text-xs uppercase tracking-[0.18em] text-violet-200">
+                          Hint {index + 1}
+                        </div>
+                        <p className="mt-2 text-sm leading-6 text-slate-200">{hint}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-4">
+                  <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
                     Supported functions for this challenge
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -432,6 +479,14 @@ function App() {
                 editable={activeCellEditable}
                 onFormulaChange={handleFormulaChange}
               />
+              <FeedbackPanel
+                validationResult={attemptState.lastValidation}
+                submissionCount={attemptState.submissionCount}
+                hintsShown={attemptState.hintsShown}
+                hasMoreHints={attemptState.hintsShown < activeChallenge.hints.length}
+                onCheckAnswer={handleCheckAnswer}
+                onRevealHint={handleRevealHint}
+              />
               <SpreadsheetGrid
                 challenge={activeChallenge}
                 gridState={gridState}
@@ -440,6 +495,9 @@ function App() {
                   setGridState((currentState) => selectGridCell(currentState, cellRef))
                 }
               />
+              {attemptState.completed && (
+                <ReviewCard challenge={activeChallenge} starsEarned={starsEarned} />
+              )}
             </div>
           </section>
         )}
