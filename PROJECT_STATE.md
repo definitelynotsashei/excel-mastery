@@ -5,7 +5,7 @@ Last reviewed: 2026-04-21
 ## Summary
 This document describes implemented behavior only.
 
-Excel Mastery currently provides a frontend scaffold, the first formulas-track domain model, and a formula-engine foundation. The repository now includes a Vite + React application shell, Tailwind-based global styling, ESLint configuration, Vitest-based unit testing, formulas track metadata, tier metadata, challenge definitions, progression helpers for XP, stars, and unlocks, and formula-engine modules for tokenization, parsing, references, evaluation, and launch-scope beginner functions. The UI currently presents a static landing screen while the core calculation layer is built underneath it.
+Excel Mastery currently provides a frontend scaffold, the first formulas-track domain model, and a growing formula-engine core. The repository now includes a Vite + React application shell, Tailwind-based global styling, ESLint configuration, Vitest-based unit testing, formulas track metadata, tier metadata, challenge definitions, progression helpers for XP, stars, and unlocks, and formula-engine modules for tokenization, parsing, references, evaluation, and supported beginner-plus-intermediate functions such as `IF`, `AND`, `OR`, `SUMIF`, `COUNTIF`, `VLOOKUP`, `IFERROR`, and `MONTH`. The UI currently presents a static landing screen while the core calculation layer is built underneath it.
 
 ## Current Product Definition
 There is not yet a functional learning workflow. The current app boots into a static overview screen while the formulas-track content model and formula engine are developed behind the scenes for the upcoming spreadsheet sandbox.
@@ -16,7 +16,7 @@ There is not yet a functional learning workflow. The current app boots into a st
 - Styling system: Tailwind import plus global dark-theme baseline styles
 - Formulas track data model: track metadata, tier metadata, challenge bank, and curriculum phase definitions
 - Progression helpers: pure XP, level, star, and unlock utilities
-- Formula engine: tokenizer, parser, AST evaluator, reference/range helpers, typed engine errors, and launch-scope beginner function support
+- Formula engine: tokenizer, parser, AST evaluator, reference/range helpers, typed engine errors, range-shape support for lookup tables, and supported beginner plus key intermediate functions
 - Verification setup: ESLint and Vitest configuration with smoke tests, data-model unit coverage, and formula-engine unit coverage
 
 ## Persistence and Portability
@@ -47,6 +47,7 @@ There is not yet a functional learning workflow. The current app boots into a st
 - No spreadsheet sandbox UI exists yet.
 - No persistence adapter exists yet.
 - No interactive navigation, sandbox, or challenge completion flow exists yet.
+- Advanced modern-array functions such as `FILTER` and `XLOOKUP` are still unsupported.
 
 ## Current Direction
-Active build-out. The immediate focus is continuing milestone 2 into the next slice: expanding the formula engine beyond beginner coverage and then connecting it to the spreadsheet sandbox.
+Active build-out. The immediate focus is closing the remaining engine gaps needed for the drafted challenge bank and then connecting the engine to the spreadsheet sandbox in milestone 3.

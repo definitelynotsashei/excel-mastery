@@ -1,6 +1,6 @@
 import { FormulaEvaluationError } from "./errors";
 import { getFormulaFunction } from "./functions";
-import { getCellValue, getRangeValues } from "./references";
+import { getCellValue, getRangeData } from "./references";
 
 function evaluateBinaryExpression(operator, left, right) {
   switch (operator) {
@@ -51,7 +51,7 @@ export function evaluateAst(ast, grid) {
     case "CellReference":
       return getCellValue(grid, ast.ref);
     case "RangeReference":
-      return getRangeValues(grid, ast.start, ast.end);
+      return getRangeData(grid, ast.start, ast.end);
     case "BinaryExpression":
       return evaluateBinaryExpression(
         ast.operator,
@@ -65,6 +65,14 @@ export function evaluateAst(ast, grid) {
         evaluateAst(ast.right, grid),
       );
     case "FunctionCall": {
+      if (ast.name === "IFERROR") {
+        try {
+          return evaluateAst(ast.arguments[0], grid);
+        } catch {
+          return evaluateAst(ast.arguments[1], grid);
+        }
+      }
+
       const fn = getFormulaFunction(ast.name);
       const args = ast.arguments.map((arg) => evaluateAst(arg, grid));
       return fn(...args);

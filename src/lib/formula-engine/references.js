@@ -68,6 +68,36 @@ export function expandRange(startRef, endRef) {
   return refs;
 }
 
+export function getRangeData(grid, startRef, endRef) {
+  const start = normalizeCellReference(startRef);
+  const end = normalizeCellReference(endRef);
+  const rowStart = Math.min(start.rowIndex, end.rowIndex);
+  const rowEnd = Math.max(start.rowIndex, end.rowIndex);
+  const columnStart = Math.min(start.columnIndex, end.columnIndex);
+  const columnEnd = Math.max(start.columnIndex, end.columnIndex);
+  const rows = [];
+
+  for (let rowIndex = rowStart; rowIndex <= rowEnd; rowIndex += 1) {
+    const rowValues = [];
+
+    for (let columnIndex = columnStart; columnIndex <= columnEnd; columnIndex += 1) {
+      const ref = `${indexToColumnLabel(columnIndex)}${rowIndex + 1}`;
+      rowValues.push(getCellValue(grid, ref));
+    }
+
+    rows.push(rowValues);
+  }
+
+  return {
+    kind: "range",
+    start: start.ref,
+    end: end.ref,
+    width: columnEnd - columnStart + 1,
+    height: rowEnd - rowStart + 1,
+    rows,
+  };
+}
+
 export function getRangeValues(grid, startRef, endRef) {
-  return expandRange(startRef, endRef).map((reference) => getCellValue(grid, reference));
+  return getRangeData(grid, startRef, endRef).rows.flat();
 }

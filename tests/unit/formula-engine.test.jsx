@@ -2,7 +2,7 @@ import { getChallengesByTier } from "../../src/features/formulas/data/challenges
 import { evaluateFormula, safeEvaluateFormula } from "../../src/lib/formula-engine";
 import { FormulaFunctionError, FormulaParseError, FormulaReferenceError } from "../../src/lib/formula-engine/errors";
 import { parseFormula } from "../../src/lib/formula-engine/parse";
-import { expandRange, getCellValue, normalizeCellReference } from "../../src/lib/formula-engine/references";
+import { expandRange, getCellValue, getRangeData, normalizeCellReference } from "../../src/lib/formula-engine/references";
 import { tokenizeFormula } from "../../src/lib/formula-engine/tokenize";
 
 describe("formula engine", () => {
@@ -54,6 +54,10 @@ describe("formula engine", () => {
       row: 6,
     });
     expect(expandRange("B2", "B5")).toEqual(["B2", "B3", "B4", "B5"]);
+    expect(getRangeData(getChallengesByTier("intermediate")[3].grid, "E2", "F5")).toMatchObject({
+      width: 2,
+      height: 4,
+    });
   });
 
   it("evaluates every beginner challenge expected formula", () => {
@@ -93,7 +97,34 @@ describe("formula engine", () => {
 
   it("throws for unsupported function lookups through the strict evaluator", () => {
     expect(() =>
-      evaluateFormula("=VLOOKUP(B3,E2:F5,2,FALSE)", getChallengesByTier("intermediate")[3].grid),
+      evaluateFormula("=XLOOKUP(B3,E2:E5,F2:F5)", getChallengesByTier("advanced")[1].grid),
     ).toThrow(FormulaFunctionError);
+  });
+
+  it("evaluates the supported intermediate challenge formulas", () => {
+    const supportedChallengeIds = new Set([
+      "formulas-intermediate-if-margin",
+      "formulas-intermediate-sumif-east",
+      "formulas-intermediate-countif-overdue",
+      "formulas-intermediate-vlookup-plan",
+      "formulas-intermediate-date-month",
+      "formulas-intermediate-iferror-lookup",
+    ]);
+
+    getChallengesByTier("intermediate")
+      .filter((challenge) => supportedChallengeIds.has(challenge.id))
+      .forEach((challenge) => {
+        const targetCell = challenge.targetCells[0];
+        const expected = challenge.expectedAnswer[targetCell];
+        const result = evaluateFormula(expected.formulaPattern, challenge.grid);
+        expect(result.value).toEqual(expected.result);
+      });
+  });
+
+  it("supports logical helper formulas directly", () => {
+    const grid = getChallengesByTier("intermediate")[0].grid;
+
+    expect(evaluateFormula("=AND(TRUE,C2>0.3)", grid).value).toBe(true);
+    expect(evaluateFormula('=IF(OR(FALSE,C2>0.3),"Go","Stop")', grid).value).toBe("Go");
   });
 });

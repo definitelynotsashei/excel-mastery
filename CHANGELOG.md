@@ -19,6 +19,8 @@ All notable changes to this project are documented in this file.
 - Detailed execution plan for Milestones 2 through 7, including commit slices, acceptance criteria, and feature sequencing.
 - Formula-engine foundation with tokenizer, parser, reference helpers, evaluator, typed errors, and beginner-function support.
 - Unit coverage for formula parsing, reference handling, unsupported-function errors, and beginner challenge evaluation.
+- Intermediate engine support for `IF`, `AND`, `OR`, `SUMIF`, `COUNTIF`, `VLOOKUP`, `IFERROR`, and `MONTH`.
+- Range-shape support for lookup-table evaluation plus expanded unit coverage for intermediate challenge formulas.
 
 ### Changed
 - Established default engineering and documentation workflow.
