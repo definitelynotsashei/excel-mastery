@@ -10,6 +10,7 @@ import FeedbackPanel from "../features/formulas/components/FeedbackPanel";
 import ReviewCard from "../features/formulas/components/ReviewCard";
 import SpreadsheetGrid from "../features/formulas/components/SpreadsheetGrid";
 import { formulaChallenges, getChallengesByTier } from "../features/formulas/data/challenges";
+import { getChallengeById } from "../features/formulas/data/challenges";
 import { formulasCurriculum } from "../features/formulas/data/curriculum";
 import { formulasTrackTiers } from "../features/formulas/data/tiers";
 import { formulasTrack } from "../features/formulas/data/tracks";
@@ -38,7 +39,7 @@ import {
   mergeProgressRecords,
   summarizeTierProgress,
 } from "../lib/progression/session-progress";
-import { loadProgressState, saveProgressState } from "../lib/storage/progress-storage";
+import { loadAppState, saveAppState } from "../lib/storage/progress-storage";
 
 const milestoneChecklist = [
   "Formula engine and challenge data are in place",
@@ -96,7 +97,13 @@ function App() {
 
     async function hydrateProgress() {
       const challengeIds = formulaChallenges.map((challenge) => challenge.id);
-      const loadedProgress = await loadProgressState(challengeIds);
+      const loadedAppState =
+        (await loadAppState(challengeIds, Object.values(APP_VIEWS))) ?? {
+          progressByChallengeId: {},
+          uiState: {},
+        };
+      const loadedProgress = loadedAppState.progressByChallengeId ?? {};
+      const loadedUiState = loadedAppState.uiState ?? {};
 
       if (cancelled) {
         return;
@@ -105,6 +112,19 @@ function App() {
       setProgressByChallengeId((currentProgress) =>
         mergeProgressRecords(currentProgress, loadedProgress),
       );
+      if (loadedUiState.currentView) {
+        setCurrentView(loadedUiState.currentView);
+      }
+
+      if (loadedUiState.activeChallengeId) {
+        const restoredChallenge = getChallengeById(loadedUiState.activeChallengeId);
+
+        if (restoredChallenge) {
+          setActiveChallenge(restoredChallenge);
+          setGridState(createChallengeGridState(restoredChallenge));
+        }
+      }
+
       setProgressHydrated(true);
       setStorageStatus("ready");
     }
@@ -124,7 +144,13 @@ function App() {
     let cancelled = false;
 
     async function persistProgress() {
-      await saveProgressState(progressByChallengeId);
+      await saveAppState({
+        progressByChallengeId,
+        uiState: {
+          currentView,
+          activeChallengeId: activeChallenge.id,
+        },
+      });
 
       if (!cancelled) {
         setStorageStatus("ready");
@@ -136,7 +162,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [progressByChallengeId, progressHydrated]);
+  }, [activeChallenge.id, currentView, progressByChallengeId, progressHydrated]);
 
   const tierSummaries = useMemo(
     () =>

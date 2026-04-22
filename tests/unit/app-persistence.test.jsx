@@ -1,26 +1,29 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const loadProgressState = vi.fn();
-const saveProgressState = vi.fn();
+const loadAppState = vi.fn();
+const saveAppState = vi.fn();
 
 vi.mock("../../src/lib/storage/progress-storage", () => ({
-  loadProgressState,
-  saveProgressState,
+  loadAppState,
+  saveAppState,
 }));
 
 describe("App persistence flow", () => {
   beforeEach(() => {
     vi.resetModules();
-    loadProgressState.mockReset();
-    saveProgressState.mockReset();
-    loadProgressState.mockResolvedValue({
-      "formulas-beginner-sum-q1-west": {
-        completed: true,
-        starsEarned: 3,
+    loadAppState.mockReset();
+    saveAppState.mockReset();
+    loadAppState.mockResolvedValue({
+      progressByChallengeId: {
+        "formulas-beginner-sum-q1-west": {
+          completed: true,
+          starsEarned: 3,
+        },
       },
+      uiState: {},
     });
-    saveProgressState.mockResolvedValue(undefined);
+    saveAppState.mockResolvedValue(undefined);
   });
 
   it("hydrates saved progress into the dashboard and track view", async () => {
@@ -42,25 +45,52 @@ describe("App persistence flow", () => {
     expect(screen.getByText(/solved 3 stars/i)).toBeInTheDocument();
   });
 
-  it("saves updated progress after a challenge is solved", async () => {
+  it("hydrates the saved current view and active challenge", async () => {
+    loadAppState.mockResolvedValue({
+      progressByChallengeId: {},
+      uiState: {
+        currentView: "challenge",
+        activeChallengeId: "formulas-beginner-average-ticket",
+      },
+    });
+
     const { default: App } = await import("../../src/app/App");
 
     render(<App />);
 
-    await waitFor(() => expect(loadProgressState).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", { name: /average support ticket time/i }),
+      ).toBeInTheDocument(),
+    );
+  });
 
-    fireEvent.click(screen.getByRole("button", { name: /open challenge/i }));
+  it("saves updated progress and resume context after navigation and completion", async () => {
+    const { default: App } = await import("../../src/app/App");
+
+    render(<App />);
+
+    await waitFor(() => expect(loadAppState).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByRole("button", { name: /formulas track/i }));
+    fireEvent.click(screen.getByRole("button", { name: /average support ticket time/i }));
     fireEvent.change(screen.getByLabelText(/formula input/i), {
-      target: { value: "=SUM(B2:B5)" },
+      target: { value: "=AVERAGE(C2:C6)" },
     });
     fireEvent.click(screen.getByRole("button", { name: /check answer/i }));
 
     await waitFor(() =>
-      expect(saveProgressState).toHaveBeenCalledWith(
+      expect(saveAppState).toHaveBeenCalledWith(
         expect.objectContaining({
-          "formulas-beginner-sum-q1-west": expect.objectContaining({
-            completed: true,
-            starsEarned: 3,
+          progressByChallengeId: expect.objectContaining({
+            "formulas-beginner-average-ticket": expect.objectContaining({
+              completed: true,
+              starsEarned: 3,
+            }),
+          }),
+          uiState: expect.objectContaining({
+            currentView: "challenge",
+            activeChallengeId: "formulas-beginner-average-ticket",
           }),
         }),
       ),

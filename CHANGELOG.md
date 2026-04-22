@@ -35,6 +35,7 @@ All notable changes to this project are documented in this file.
 - Challenge progress badges, a collapsible scenario briefing, and next-challenge navigation inside the formulas workspace.
 - Session-only progress tracking that updates dashboard recommendations, session XP and level, tier completion counts, unlock badges, and solved challenge markers.
 - Persistence-backed progress using a storage adapter with IndexedDB fallback, plus autosave and hydration so formulas completion survives reloads and relaunches.
+- Resume-state persistence so the app restores the last active view and formulas challenge instead of always reopening at the default dashboard state.
 
 ### Changed
 - Established default engineering and documentation workflow.

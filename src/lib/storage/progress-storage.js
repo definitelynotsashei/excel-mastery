@@ -38,20 +38,55 @@ export function normalizeStoredProgressRecord(progressByChallengeId, challengeId
   }, {});
 }
 
-export function createStoredProgressPayload(progressByChallengeId) {
+export function normalizeStoredUiState(uiState, challengeIds, viewIds) {
+  if (!isPlainObject(uiState)) {
+    return {};
+  }
+
+  const validChallengeIds = new Set(challengeIds);
+  const validViewIds = new Set(viewIds);
+  const normalizedUiState = {};
+
+  if (typeof uiState.activeChallengeId === "string" && validChallengeIds.has(uiState.activeChallengeId)) {
+    normalizedUiState.activeChallengeId = uiState.activeChallengeId;
+  }
+
+  if (typeof uiState.currentView === "string" && validViewIds.has(uiState.currentView)) {
+    normalizedUiState.currentView = uiState.currentView;
+  }
+
+  return normalizedUiState;
+}
+
+export function createStoredAppStatePayload({ progressByChallengeId, uiState = {} }) {
   return {
     schemaVersion: STORAGE_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
     progressByChallengeId,
+    uiState,
   };
 }
 
-export function parseStoredProgressPayload(payload, challengeIds) {
+export function parseStoredAppStatePayload(payload, challengeIds, viewIds = []) {
   if (isPlainObject(payload) && isPlainObject(payload.progressByChallengeId)) {
-    return normalizeStoredProgressRecord(payload.progressByChallengeId, challengeIds);
+    return {
+      progressByChallengeId: normalizeStoredProgressRecord(payload.progressByChallengeId, challengeIds),
+      uiState: normalizeStoredUiState(payload.uiState, challengeIds, viewIds),
+    };
   }
 
-  return normalizeStoredProgressRecord(payload, challengeIds);
+  return {
+    progressByChallengeId: normalizeStoredProgressRecord(payload, challengeIds),
+    uiState: {},
+  };
+}
+
+export function createStoredProgressPayload(progressByChallengeId) {
+  return createStoredAppStatePayload({ progressByChallengeId });
+}
+
+export function parseStoredProgressPayload(payload, challengeIds) {
+  return parseStoredAppStatePayload(payload, challengeIds).progressByChallengeId;
 }
 
 function getWindowStorageAdapter() {
@@ -67,12 +102,12 @@ function getWindowStorageAdapter() {
   }
 
   return {
-    async load(challengeIds) {
+    async loadAppState(challengeIds, viewIds) {
       const payload = await Promise.resolve(window.storage.get(STORAGE_KEY));
-      return parseStoredProgressPayload(payload, challengeIds);
+      return parseStoredAppStatePayload(payload, challengeIds, viewIds);
     },
-    async save(progressByChallengeId) {
-      const payload = createStoredProgressPayload(progressByChallengeId);
+    async saveAppState(appState) {
+      const payload = createStoredAppStatePayload(appState);
       await Promise.resolve(window.storage.set(STORAGE_KEY, payload));
     },
   };
@@ -103,7 +138,7 @@ async function openProgressDatabase() {
   return requestToPromise(openRequest);
 }
 
-async function loadFromIndexedDb(challengeIds) {
+async function loadFromIndexedDb(challengeIds, viewIds) {
   const database = await openProgressDatabase();
 
   if (!database) {
@@ -115,13 +150,13 @@ async function loadFromIndexedDb(challengeIds) {
     const store = transaction.objectStore(STORE_NAME);
     const payload = await requestToPromise(store.get(STORAGE_KEY));
 
-    return parseStoredProgressPayload(payload, challengeIds);
+    return parseStoredAppStatePayload(payload, challengeIds, viewIds);
   } finally {
     database.close();
   }
 }
 
-async function saveToIndexedDb(progressByChallengeId) {
+async function saveToIndexedDb(appState) {
   const database = await openProgressDatabase();
 
   if (!database) {
@@ -132,38 +167,47 @@ async function saveToIndexedDb(progressByChallengeId) {
     const transaction = database.transaction(STORE_NAME, "readwrite");
     const store = transaction.objectStore(STORE_NAME);
 
-    await requestToPromise(store.put(createStoredProgressPayload(progressByChallengeId), STORAGE_KEY));
+    await requestToPromise(store.put(createStoredAppStatePayload(appState), STORAGE_KEY));
   } finally {
     database.close();
   }
 }
 
-export async function loadProgressState(challengeIds) {
+export async function loadAppState(challengeIds, viewIds = []) {
   try {
     const windowStorageAdapter = getWindowStorageAdapter();
 
     if (windowStorageAdapter) {
-      return await windowStorageAdapter.load(challengeIds);
+      return await windowStorageAdapter.loadAppState(challengeIds, viewIds);
     }
 
-    return await loadFromIndexedDb(challengeIds);
+    return await loadFromIndexedDb(challengeIds, viewIds);
   } catch (error) {
-    console.warn("Excel Mastery could not load saved progress.", error);
-    return {};
+    console.warn("Excel Mastery could not load saved app state.", error);
+    return { progressByChallengeId: {}, uiState: {} };
   }
 }
 
-export async function saveProgressState(progressByChallengeId) {
+export async function saveAppState(appState) {
   try {
     const windowStorageAdapter = getWindowStorageAdapter();
 
     if (windowStorageAdapter) {
-      await windowStorageAdapter.save(progressByChallengeId);
+      await windowStorageAdapter.saveAppState(appState);
       return;
     }
 
-    await saveToIndexedDb(progressByChallengeId);
+    await saveToIndexedDb(appState);
   } catch (error) {
-    console.warn("Excel Mastery could not save progress.", error);
+    console.warn("Excel Mastery could not save app state.", error);
   }
+}
+
+export async function loadProgressState(challengeIds) {
+  const result = await loadAppState(challengeIds);
+  return result.progressByChallengeId;
+}
+
+export async function saveProgressState(progressByChallengeId) {
+  await saveAppState({ progressByChallengeId });
 }
