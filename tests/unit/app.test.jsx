@@ -44,5 +44,25 @@ describe("App", () => {
 
     expect(screen.getByText(/the target cell matches the expected result/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /sum adds all numeric values in a range/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /next challenge: average support ticket time/i })).toBeInTheDocument();
+  });
+
+  it("can collapse the scenario brief and move to the next challenge after completion", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /open challenge/i }));
+
+    expect(screen.getByText(/sales standup/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /collapse brief/i }));
+    expect(screen.queryByText(/sales standup/i)).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(/formula input/i), {
+      target: { value: "=SUM(B2:B5)" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /check answer/i }));
+    fireEvent.click(screen.getByRole("button", { name: /next challenge: average support ticket time/i }));
+
+    expect(screen.getByRole("heading", { name: /average support ticket time/i })).toBeInTheDocument();
+    expect(screen.getByText(/support wants the average resolution time/i)).toBeInTheDocument();
   });
 });

@@ -1,4 +1,11 @@
-function FeedbackPanel({ validationResult, submissionCount, hintsShown, onCheckAnswer, onRevealHint, hasMoreHints }) {
+function FeedbackPanel({
+  validationResult,
+  submissionCount,
+  hintsShown,
+  onCheckAnswer,
+  onRevealHint,
+  hasMoreHints,
+}) {
   const toneByStatus = {
     empty: "border-slate-400/20 bg-slate-400/10 text-slate-100",
     pending: "border-slate-400/20 bg-slate-400/10 text-slate-100",

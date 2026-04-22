@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { APP_VIEWS } from "./routes";
 import {
   getDefaultFormulasChallenge,
+  getChallengePosition,
+  getNextChallenge,
   getRecommendedChallenge,
   summarizeTierDrafts,
 } from "./app-shell";
@@ -75,6 +77,7 @@ function App() {
     () => getDefaultFormulasChallenge() ?? formulaChallenges[0],
   );
   const [attemptState, setAttemptState] = useState(() => createAttemptState());
+  const [scenarioExpanded, setScenarioExpanded] = useState(true);
   const tierSummaries = summarizeTierDrafts();
   const challengeCount = formulaChallenges.length;
   const totalXp = sumChallengeXp(formulaChallenges);
@@ -90,6 +93,8 @@ function App() {
     createEmptyEvaluationState(activeChallenge)[gridState.activeCell];
   const visibleHints = getVisibleHints(activeChallenge, attemptState);
   const starsEarned = getCompletionStars(attemptState);
+  const challengePosition = getChallengePosition(activeChallenge.id);
+  const nextChallenge = getNextChallenge(activeChallenge.id);
 
   function handleFormulaChange(nextFormula) {
     if (!activeCellEditable) {
@@ -104,6 +109,7 @@ function App() {
   function handleResetChallenge() {
     setGridState(createChallengeGridState(activeChallenge));
     setAttemptState(createAttemptState());
+    setScenarioExpanded(true);
   }
 
   function openTrackView() {
@@ -114,6 +120,7 @@ function App() {
     setActiveChallenge(challenge);
     setGridState(createChallengeGridState(challenge));
     setAttemptState(createAttemptState());
+    setScenarioExpanded(true);
     setCurrentView(APP_VIEWS.challenge);
   }
 
@@ -373,15 +380,20 @@ function App() {
             <article className="rounded-[24px] border border-white/10 bg-slate-900/75 p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
-                    Challenge workspace
+                  <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.22em] text-slate-400">
+                    <span>Challenge workspace</span>
+                    {challengePosition && (
+                      <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] text-slate-300">
+                        Challenge {challengePosition.index + 1} of {challengePosition.total}
+                      </span>
+                    )}
+                    <span className="rounded-full border border-violet-400/20 bg-violet-400/10 px-3 py-1 text-[11px] text-violet-200">
+                      {activeChallenge.tier}
+                    </span>
                   </div>
                   <h2 className="mt-2 text-2xl font-semibold text-white">
                     {activeChallenge.title}
                   </h2>
-                  <p className="mt-3 text-sm leading-6 text-slate-300">
-                    {activeChallenge.scenario}
-                  </p>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -402,6 +414,28 @@ function App() {
               </div>
 
               <div className="mt-6 grid gap-4">
+                <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+                        Scenario briefing
+                      </div>
+                      <div className="mt-2 text-sm text-slate-500">
+                        Workplace setup for the formula task
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-200 transition hover:bg-white/[0.08]"
+                      onClick={() => setScenarioExpanded((currentValue) => !currentValue)}
+                    >
+                      {scenarioExpanded ? "Collapse Brief" : "Show Brief"}
+                    </button>
+                  </div>
+                  {scenarioExpanded && (
+                    <p className="mt-4 text-sm leading-6 text-slate-200">{activeChallenge.scenario}</p>
+                  )}
+                </div>
                 <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-4">
                   <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
                     Learning objective
@@ -496,7 +530,13 @@ function App() {
                 }
               />
               {attemptState.completed && (
-                <ReviewCard challenge={activeChallenge} starsEarned={starsEarned} />
+                <ReviewCard
+                  challenge={activeChallenge}
+                  starsEarned={starsEarned}
+                  nextChallengeTitle={nextChallenge?.title ?? null}
+                  onNextChallenge={nextChallenge ? () => openChallenge(nextChallenge) : null}
+                  onBackToTrack={openTrackView}
+                />
               )}
             </div>
           </section>

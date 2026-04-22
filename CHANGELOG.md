@@ -32,6 +32,7 @@ All notable changes to this project are documented in this file.
 - PWA baseline with manifest, service worker, installable browser-app path, and a fix for the missing React import in the app entry point that could cause a blank page at startup.
 - Workflow guardrails for future sessions: validated browser/PWA path as the supported runtime, explicit UI-access confirmation before deeper feature work, and stronger startup rules in repo docs.
 - Challenge validation flow with answer checking, progressive hints, visible feedback states, and a review card for solved formulas challenges.
+- Challenge progress badges, a collapsible scenario briefing, and next-challenge navigation inside the formulas workspace.
 
 ### Changed
 - Established default engineering and documentation workflow.
