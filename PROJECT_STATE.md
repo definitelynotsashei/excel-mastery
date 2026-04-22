@@ -15,6 +15,7 @@ There is not yet a full learning workflow, but the app now boots into a navigabl
 - Dashboard: recommended next challenge, track cards, milestone readiness, and launch-scope summary
 - Track view: formulas-track overview plus tier-grouped challenge list
 - Challenge workspace: one formulas challenge rendered with scenario details, reset action, formula bar, and spreadsheet grid
+- Windows launcher: double-click VBScript files for opening and stopping the app without manual command-line usage
 - Styling system: Tailwind import plus global dark-theme baseline styles
 - Formulas track data model: track metadata, tier metadata, challenge bank, and curriculum phase definitions
 - Progression helpers: pure XP, level, star, and unlock utilities
@@ -53,6 +54,7 @@ There is not yet a full learning workflow, but the app now boots into a navigabl
 - Progress and unlock state are not yet reflected in the visible UI.
 - Only one challenge workspace is deeply wired into the sandbox state at a time.
 - Advanced modern-array functions such as `FILTER` and `XLOOKUP` are still unsupported.
+- The current launcher still opens the app in the browser; it is not yet a packaged native desktop application.
 
 ## Current Direction
 Active build-out. The immediate focus is layering validation, hints, and completion behavior on top of the new dashboard, track, and challenge shell so the UI can start behaving like the actual learning product.

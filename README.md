@@ -28,3 +28,18 @@ npm.cmd run test
 npm.cmd run lint
 npm.cmd run build
 ```
+
+## Open As An App
+
+For a double-click launch on Windows, use:
+
+- `Open Excel Mastery.vbs`
+
+This will:
+- build the current app
+- start a hidden local server
+- open Excel Mastery in your default browser automatically
+
+To stop the hidden app server, use:
+
+- `Close Excel Mastery.vbs`

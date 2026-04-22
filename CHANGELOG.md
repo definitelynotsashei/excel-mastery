@@ -25,6 +25,7 @@ All notable changes to this project are documented in this file.
 - Grid-state helper modules and unit coverage for editable target cells, formula drafts, and error display states.
 - Navigable product shell with dashboard, formulas track overview, and challenge workspace views.
 - App-shell helpers and tests covering UI navigation into the formulas workspace.
+- Windows double-click launcher and stop scripts so the app can be opened without manually using the command prompt.
 
 ### Changed
 - Established default engineering and documentation workflow.
